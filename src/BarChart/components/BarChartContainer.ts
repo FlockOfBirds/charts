@@ -18,11 +18,13 @@ interface BarChartContainerProps extends WrapperProps {
     height: number;
     heightUnit: HeightUnit;
     barMode: BarMode;
+    dataSourceMicroflow: string;
     title?: string;
     seriesEntity: string;
     seriesNameAttribute: string;
     showGrid: boolean;
     showToolbar: boolean;
+    sourceType: "xpath" | "microflow";
     dataEntity: string;
     xValueAttribute: string;
     yValueAttribute: string;
@@ -87,36 +89,59 @@ class BarChartContainer extends Component<BarChartContainerProps, BarChartContai
             mxObject.fetch(this.props.seriesEntity, (series: mendix.lib.MxObject[]) => {
                 const seriesCount = series.length;
                 series.forEach((object, index) => {
-                    const seriesName = object.get(this.props.seriesNameAttribute) as string;
-                    object.fetch(this.props.dataEntity, (values: mendix.lib.MxObject[]) => {
-                        window.mx.data.get({
-                            callback: seriesData => {
-                                const fetchedData = seriesData.map(value => {
-                                    return {
-                                        x: value.get(this.props.xValueAttribute) as Datum,
-                                        y: parseInt(value.get(this.props.yValueAttribute) as string, 10) as Datum
-                                    };
-                                });
-
-                                const barData: BarData = {
-                                    name: seriesName,
-                                    type: "bar",
-                                    x: fetchedData.map(value => value.x),
-                                    y: fetchedData.map(value => value.y)
-                                };
-
-                                this.addSeries(barData, seriesCount === index + 1);
-                            },
-                            error: error => console.log(error),
-                            filter: {
-                                sort: [ [ this.props.xAxisSortAttribute, "asc" ] ]
-                            },
-                            guids: values.map(value => value.getGuid())
+                    if (this.props.sourceType === "xpath") {
+                        object.fetch(this.props.dataEntity, (values: mendix.lib.MxObject[]) => {
+                            window.mx.data.get({
+                                callback: seriesData => {
+                                    const barData = this.processData(seriesData);
+                                    this.addSeries(barData, seriesCount === index + 1);
+                                },
+                                error: error => console.log(error),
+                                filter: {
+                                    sort: [ [ this.props.xAxisSortAttribute, "asc" ] ]
+                                },
+                                guids: values.map(value => value.getGuid())
+                            });
                         });
-                    });
+                    } else if (this.props.sourceType === "microflow") {
+                        object.fetch(this.props.dataEntity, (values: mendix.lib.MxObject[]) => {
+                            const actionname = this.props.dataSourceMicroflow;
+                            mx.ui.action(actionname, {
+                                callback: (seriesData: mendix.lib.MxObject[]) => {
+                                    const barData = this.processData(seriesData);
+                                    this.addSeries(barData, seriesCount === index + 1);
+                                },
+                                error: () => this.setState({
+                                    data: []
+                                }),
+                                params: {
+                                    applyto: "selection",
+                                    guids: values.map(value => value.getGuid())
+                                }
+                            });
+                        });
+                    }
                 });
             });
         }
+    }
+
+    private processData(seriesData: mendix.lib.MxObject[]) {
+        const fetchedData = seriesData.map(value => {
+            return {
+                x: value.get(this.props.xValueAttribute) as Datum,
+                y: parseInt(value.get(this.props.yValueAttribute) as string, 10) as Datum
+            };
+        });
+
+        const barData: BarData = {
+            name: this.props.seriesNameAttribute,
+            type: "bar",
+            x: fetchedData.map(value => value.x),
+            y: fetchedData.map(value => value.y)
+        };
+
+        return barData;
     }
 
     private addSeries(series: BarData, isFinal = false) {
@@ -137,7 +162,6 @@ class BarChartContainer extends Component<BarChartContainerProps, BarChartContai
                 return styleObject;
             }, {});
         } catch (error) {
-            // tslint:disable-next-line no-console
             window.console.log("Failed to parse style", style, error);
         }
 
