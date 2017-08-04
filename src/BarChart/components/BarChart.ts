@@ -1,5 +1,5 @@
 // tslint:disable no-console
-import { Component, DOM } from "react";
+import { Component, createElement } from "react";
 import { BarData, BarLayout, Config, PlotlyStatic } from "plotly.js";
 
 interface BarChartProps {
@@ -28,7 +28,7 @@ class BarChart extends Component<BarChartProps, {}> {
     }
 
     render() {
-        return DOM.div({ className: "widget-plotly-bar", ref: this.getPlotlyNodeRef });
+        return createElement("div", { className: "widget-plotly-bar", ref: this.getPlotlyNodeRef });
     }
 
     componentDidMount() {
