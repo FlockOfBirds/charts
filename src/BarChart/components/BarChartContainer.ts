@@ -26,7 +26,9 @@ interface BarChartContainerProps extends WrapperProps {
     showToolbar: boolean;
     sourceType: "xpath" | "microflow";
     dataEntity: string;
+    xAxisLabel: string;
     xValueAttribute: string;
+    yAxisLabel: string;
     yValueAttribute: string;
     xAxisSortAttribute: string;
 }
@@ -58,7 +60,11 @@ class BarChartContainer extends Component<BarChartContainerProps, BarChartContai
             layout: {
                 barmode: this.props.barMode,
                 title: this.props.title,
-                yaxis: { showgrid: this.props.showGrid }
+                xaxis: { title: this.props.xAxisLabel },
+                yaxis: {
+                    showgrid: this.props.showGrid,
+                    title: this.props.yAxisLabel
+                }
             }
         });
     }
