@@ -3,6 +3,7 @@ import { Component, createElement } from "react";
 
 import { BarData, BarMode, Datum } from "plotly.js";
 import { BarChart } from "./BarChart";
+import { Alert } from "./Alert";
 
 interface WrapperProps {
     class?: string;
@@ -34,6 +35,7 @@ interface BarChartContainerProps extends WrapperProps {
 }
 
 interface BarChartContainerState {
+    alertMessage?: string;
     data?: BarData[];
 }
 
@@ -52,21 +54,28 @@ class BarChartContainer extends Component<BarChartContainerProps, BarChartContai
     }
 
     render() {
-        return createElement(BarChart, {
-            config: {
-                displayModeBar: this.props.showToolbar
-            },
-            data: this.state.data,
-            layout: {
-                barmode: this.props.barMode,
-                title: this.props.title,
-                xaxis: { title: this.props.xAxisLabel },
-                yaxis: {
-                    showgrid: this.props.showGrid,
-                    title: this.props.yAxisLabel
-                }
+        if (this.props.mxObject) {
+            if (this.state.alertMessage) {
+                return createElement(Alert, { bootstrapStyle: "danger", message: this.state.alertMessage });
             }
-        });
+            return createElement(BarChart, {
+                config: {
+                    displayModeBar: this.props.showToolbar
+                },
+                data: this.state.data,
+                layout: {
+                    barmode: this.props.barMode,
+                    title: this.props.title,
+                    xaxis: { title: this.props.xAxisLabel },
+                    yaxis: {
+                        showgrid: this.props.showGrid,
+                        title: this.props.yAxisLabel
+                    }
+                }
+            });
+        } else {
+            return createElement("div", {});
+        }
     }
 
     componentWillReceiveProps(newProps: BarChartContainerProps) {
@@ -113,11 +122,22 @@ class BarChartContainer extends Component<BarChartContainerProps, BarChartContai
                         object.fetch(this.props.dataEntity, (values: mendix.lib.MxObject[]) => {
                             const actionname = this.props.dataSourceMicroflow;
                             mx.ui.action(actionname, {
-                                callback: (seriesData: mendix.lib.MxObject[]) => {
-                                    const barData = this.processData(seriesData);
-                                    this.addSeries(barData, seriesCount === index + 1);
+                                callback: () => {
+                                    window.mx.data.get({
+                                        callback: seriesData => {
+                                            const barData = this.processData(seriesData);
+                                            this.addSeries(barData, seriesCount === index + 1);
+                                        },
+                                        // error: error => console.log(error),
+                                        filter: {
+                                            sort: [ [ this.props.xAxisSortAttribute, "asc" ] ]
+                                        },
+                                        guids: values.map(value => value.getGuid())
+                                    });
                                 },
-                                error: () => this.setState({
+                                error: error => this.setState({
+                                    alertMessage:
+                                    `Error while retrieving microflow data ${actionname}: ${error.message}`,
                                     data: []
                                 }),
                                 params: {
