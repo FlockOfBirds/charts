@@ -4,6 +4,7 @@ import { BarData } from "plotly.js";
 
 import { BarChart } from "./components/BarChart";
 import { BarChartContainerProps } from "./components/BarChartContainer";
+import { Alert } from "./components/Alert";
 
 // tslint:disable-next-line class-name
 export class preview extends Component<BarChartContainerProps, {}> {
@@ -16,26 +17,29 @@ export class preview extends Component<BarChartContainerProps, {}> {
     ];
 
     render() {
-        return createElement(BarChart, {
-            config: {
-                displayModeBar: this.props.showToolbar
-            },
-            data: this.data,
-            layout: {
-                barmode: this.props.barMode,
-                title: this.props.title,
-                xaxis: { title: this.props.xAxisLabel },
-                yaxis: {
-                    showgrid: this.props.showGrid,
-                    title: this.props.yAxisLabel
+        return createElement("div", {},
+            createElement(Alert),
+            createElement(BarChart, {
+                config: {
+                    displayModeBar: this.props.showToolbar
+                },
+                data: this.data,
+                layout: {
+                    barmode: this.props.barMode,
+                    title: this.props.title,
+                    xaxis: { title: this.props.xAxisLabel },
+                    yaxis: {
+                        showgrid: this.props.showGrid,
+                        title: this.props.yAxisLabel
+                    }
                 }
-            }
-        });
+            })
+        );
     }
 }
 
-// export function getPreviewCss() {
-//     return (
-//         require("plotly.js/src/css/style.scss")
-//     );
-// }
+export function getPreviewCss() {
+    return (
+        require("plotly.js/src/css/style.scss")
+    );
+}
