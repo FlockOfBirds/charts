@@ -81,6 +81,11 @@
                 <enumerationValue key="microflow">Microflow</enumerationValue>
             </enumerationValues>
         </property>
+        <property key="entityConstraint" type="entityConstraint" entityProperty="seriesEntity" required="false">
+            <caption>Source XPath Constraint</caption>
+            <category>Data source</category>
+            <description>Constraint on the data from the data entity</description>
+        </property>
         <property key="seriesNameAttribute" type="attribute" entityProperty="seriesEntity">
             <caption>Series name attribute</caption>
             <category>Data source</category>

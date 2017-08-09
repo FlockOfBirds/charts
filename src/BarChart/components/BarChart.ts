@@ -1,4 +1,3 @@
-// tslint:disable no-console
 import { Component, createElement } from "react";
 import { BarData, BarLayout, Config, PlotlyStatic } from "plotly.js";
 
@@ -14,8 +13,8 @@ class BarChart extends Component<BarChartProps, {}> {
     private data: BarData[] = [
         {
             type: "bar",
-            x: [ "giraffes", "orangutans", "monkeys" ],
-            y: [ 20, 14, 23 ]
+            x: [ "Sample 1", "Sample 2", "Sample 3", "Sample 4", "Sample 5", "Sample 6", "Sample 7" ],
+            y: [ 20, 14, 23, 25, 50, 32, 44 ]
         }
     ];
 
@@ -38,6 +37,12 @@ class BarChart extends Component<BarChartProps, {}> {
     componentWillReceiveProps(newProps: BarChartProps) {
         this.renderChart(newProps.data);
     }
+
+    // componentWillUnmount() {
+    //     if (this.plotlyNode) {
+    //         this.Plotly.purge(this.plotlyNode);
+    //     }
+    // }
 
     private getPlotlyNodeRef(node: HTMLDivElement) {
         this.plotlyNode = node;

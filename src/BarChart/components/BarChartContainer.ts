@@ -1,4 +1,3 @@
-// tslint:disable no-console
 import { Component, createElement } from "react";
 
 import { BarData, BarMode, Datum } from "plotly.js";
@@ -20,6 +19,7 @@ interface BarChartContainerProps extends WrapperProps {
     heightUnit: HeightUnit;
     barMode: BarMode;
     dataSourceMicroflow: string;
+    entityConstraint: string;
     title?: string;
     seriesEntity: string;
     seriesNameAttribute: string;
@@ -80,7 +80,7 @@ class BarChartContainer extends Component<BarChartContainerProps, BarChartContai
 
     componentWillReceiveProps(newProps: BarChartContainerProps) {
         this.resetSubscriptions(newProps.mxObject);
-        this.fetchAndProcessData(newProps.mxObject);
+        this.fetchData(newProps.mxObject);
     }
 
     private resetSubscriptions(mxObject?: mendix.lib.MxObject) {
@@ -96,78 +96,93 @@ class BarChartContainer extends Component<BarChartContainerProps, BarChartContai
     }
 
     private handleSubscription() {
-        this.fetchAndProcessData(this.props.mxObject);
+        this.fetchData(this.props.mxObject);
     }
 
-    private fetchAndProcessData(mxObject?: mendix.lib.MxObject) {
+    private fetchData(mxObject?: mendix.lib.MxObject) {
+        const { seriesEntity } = this.props;
         if (mxObject && this.props.seriesEntity) {
-            mxObject.fetch(this.props.seriesEntity, (series: mendix.lib.MxObject[]) => {
-                const seriesCount = series.length;
-                series.forEach((object, index) => {
-                    if (this.props.sourceType === "xpath") {
-                        object.fetch(this.props.dataEntity, (values: mendix.lib.MxObject[]) => {
-                            window.mx.data.get({
-                                callback: seriesData => {
-                                    const barData = this.processData(seriesData);
-                                    this.addSeries(barData, seriesCount === index + 1);
-                                },
-                                error: error => console.log(error),
-                                filter: {
-                                    sort: [ [ this.props.xAxisSortAttribute, "asc" ] ]
-                                },
-                                guids: values.map(value => value.getGuid())
-                            });
-                        });
-                    } else if (this.props.sourceType === "microflow") {
-                        object.fetch(this.props.dataEntity, (values: mendix.lib.MxObject[]) => {
-                            const actionname = this.props.dataSourceMicroflow;
-                            mx.ui.action(actionname, {
-                                callback: () => {
-                                    window.mx.data.get({
-                                        callback: seriesData => {
-                                            const barData = this.processData(seriesData);
-                                            this.addSeries(barData, seriesCount === index + 1);
-                                        },
-                                        // error: error => console.log(error),
-                                        filter: {
-                                            sort: [ [ this.props.xAxisSortAttribute, "asc" ] ]
-                                        },
-                                        guids: values.map(value => value.getGuid())
-                                    });
-                                },
-                                error: error => this.setState({
-                                    alertMessage:
-                                    `Error while retrieving microflow data ${actionname}: ${error.message}`,
-                                    data: []
-                                }),
-                                params: {
-                                    applyto: "selection",
-                                    guids: values.map(value => value.getGuid())
-                                }
-                            });
-                        });
-                    }
-                });
-            });
+                if (this.props.sourceType === "xpath") {
+                    const constraint = this.props.entityConstraint
+                        ? this.props.entityConstraint.replace("[%CurrentObject%]", mxObject.getGuid())
+                        : "";
+                    const entityName = seriesEntity.indexOf("/") > -1
+                        ? seriesEntity.split("/")[seriesEntity.split("/").length - 1]
+                        : seriesEntity;
+                    const Xpath = "//" + entityName + constraint;
+                    this.fetchByXpath(Xpath);
+                } else if (this.props.sourceType === "microflow" && this.props.dataSourceMicroflow) {
+                    this.fetchByMicroflow(mxObject.getGuid());
+                }
         }
     }
 
-    private processData(seriesData: mendix.lib.MxObject[]) {
-        const fetchedData = seriesData.map(value => {
-            return {
-                x: value.get(this.props.xValueAttribute) as Datum,
-                y: parseInt(value.get(this.props.yValueAttribute) as string, 10) as Datum
-            };
+    private fetchByXpath(xpath: string) {
+        window.mx.data.get({
+            callback: mxObjects => this.fetchDataFromSeries(mxObjects),
+            error: error => this.setState({
+                alertMessage: `An error occurred while retrieving data via XPath (${xpath}): ${error}`,
+                data: []
+            }),
+            filter: {
+                sort: [ [ this.props.xAxisSortAttribute, "asc" ] ]
+            },
+            xpath
         });
+    }
 
-        const barData: BarData = {
-            name: this.props.seriesNameAttribute,
-            type: "bar",
-            x: fetchedData.map(value => value.x),
-            y: fetchedData.map(value => value.y)
-        };
+    private fetchByMicroflow(guid: string) {
+        const actionname = this.props.dataSourceMicroflow;
+        mx.ui.action(actionname, {
+            callback: mxObjects => {
+                const series = mxObjects as mendix.lib.MxObject[];
+                this.fetchDataFromSeries(series);
+            },
+            error: error => this.setState({
+                alertMessage: `Error while retrieving microflow data ${actionname}: ${error.message}`,
+                data: []
+            }),
+            params: {
+                applyto: "selection",
+                guids: [ guid ]
+            }
+        });
+    }
 
-        return barData;
+    private fetchDataFromSeries(series: mendix.lib.MxObject[]) {
+        const seriesCount = series.length;
+        series.forEach((object, index) => {
+            const seriesName = object.get(this.props.seriesNameAttribute) as string;
+            object.fetch(this.props.dataEntity, (values: mendix.lib.MxObject[]) => {
+                window.mx.data.get({
+                    callback: seriesData => {
+                        const fetchedData = seriesData.map(value => {
+                            return {
+                                x: value.get(this.props.xValueAttribute) as Datum,
+                                y: parseInt(value.get(this.props.yValueAttribute) as string, 10) as Datum
+                            };
+                        });
+
+                        const barData: BarData = {
+                            name: seriesName,
+                            type: "bar",
+                            x: fetchedData.map(value => value.x),
+                            y: fetchedData.map(value => value.y)
+                        };
+
+                        this.addSeries(barData, seriesCount === index + 1);
+                    },
+                    error: error => this.setState({
+                        alertMessage: `An error occurred while retrieving data values: ${error}`,
+                        data: []
+                    }),
+                    filter: {
+                        sort: [ [ this.props.xAxisSortAttribute, "asc" ] ]
+                    },
+                    guids: values.map(value => value.getGuid())
+                });
+            });
+        });
     }
 
     private addSeries(series: BarData, isFinal = false) {
