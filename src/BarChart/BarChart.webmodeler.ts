@@ -3,7 +3,7 @@ import { Component, createElement } from "react";
 import { BarData } from "plotly.js";
 
 import { BarChart } from "./components/BarChart";
-import { BarChartContainerProps } from "./components/BarChartContainer";
+import { BarChartContainerProps, WrapperProps } from "./components/BarChartContainer";
 import { Alert } from "./components/Alert";
 
 // tslint:disable-next-line class-name
@@ -20,13 +20,14 @@ export class preview extends Component<BarChartContainerProps, {}> {
         return createElement("div", {},
             createElement(Alert),
             createElement(BarChart, {
+                ...this.props as WrapperProps,
                 config: {
                     displayModeBar: this.props.showToolbar
                 },
                 data: this.data,
                 layout: {
+                    autosize: this.props.responsive,
                     barmode: this.props.barMode,
-                    title: this.props.title,
                     xaxis: { title: this.props.xAxisLabel },
                     yaxis: {
                         showgrid: this.props.showGrid,
