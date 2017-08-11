@@ -1,6 +1,6 @@
 import { Component, createElement } from "react";
 
-import { BarData } from "plotly.js";
+import { ScatterData } from "plotly.js";
 
 import { BarChart } from "./components/BarChart";
 import { BarChartContainerProps, WrapperProps } from "./components/BarChartContainer";
@@ -8,7 +8,7 @@ import { Alert } from "./components/Alert";
 
 // tslint:disable-next-line class-name
 export class preview extends Component<BarChartContainerProps, {}> {
-    private data: BarData[] = [
+    private data: ScatterData[] = [
         {
             type: "bar",
             x: [ "Sample 1", "Sample 2", "Sample 3", "Sample 4", "Sample 5", "Sample 6", "Sample 7" ],

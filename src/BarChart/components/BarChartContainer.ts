@@ -1,6 +1,6 @@
 import { Component, createElement } from "react";
 
-import { BarData, BarMode, Datum } from "plotly.js";
+import { BarMode, Datum, ScatterData } from "plotly.js";
 import { BarChart } from "./BarChart";
 import { Alert } from "./Alert";
 
@@ -36,7 +36,7 @@ interface BarChartContainerProps extends WrapperProps {
 
 interface BarChartContainerState {
     alertMessage?: string;
-    data?: BarData[];
+    data?: ScatterData[];
 }
 
 type WidthUnit = "percentage" | "pixels";
@@ -44,7 +44,7 @@ type HeightUnit = "percentageOfWidth" | "percentageOfParent" | "pixels";
 
 class BarChartContainer extends Component<BarChartContainerProps, BarChartContainerState> {
     private subscriptionHandles: number[] = [];
-    private data: BarData[] = [];
+    private data: ScatterData[] = [];
 
     constructor(props: BarChartContainerProps) {
         super(props);
@@ -172,7 +172,7 @@ class BarChartContainer extends Component<BarChartContainerProps, BarChartContai
                             };
                         });
 
-                        const barData: BarData = {
+                        const barData: ScatterData = {
                             name: seriesName,
                             type: "bar",
                             x: fetchedData.map(value => value.x),
@@ -191,7 +191,7 @@ class BarChartContainer extends Component<BarChartContainerProps, BarChartContai
         });
     }
 
-    private addSeries(series: BarData, isFinal = false) {
+    private addSeries(series: ScatterData, isFinal = false) {
         this.data.push(series);
         if (isFinal) {
             this.setState({ data: this.data });

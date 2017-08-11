@@ -1,12 +1,12 @@
 import { Component, createElement } from "react";
 
 import * as classNames from "classnames";
-import { BarData, BarLayout, Config, PlotlyStatic } from "plotly.js";
+import { BarLayout, Config, Plots, ScatterData, newPlot, purge } from "plotly.js";
 
 import { WrapperProps } from "./BarChartContainer";
 
 interface BarChartProps extends WrapperProps {
-    data?: BarData[];
+    data?: ScatterData[];
     layout?: Partial<BarLayout>;
     config?: Partial<Config>;
     style?: object;
@@ -15,8 +15,7 @@ interface BarChartProps extends WrapperProps {
 
 class BarChart extends Component<BarChartProps, {}> {
     private plotlyNode: HTMLDivElement;
-    private Plotly: PlotlyStatic;
-    private data: BarData[] = [
+    private data: ScatterData[] = [
         {
             type: "bar",
             x: [ "Sample 1", "Sample 2", "Sample 3", "Sample 4", "Sample 5", "Sample 6", "Sample 7" ],
@@ -27,7 +26,6 @@ class BarChart extends Component<BarChartProps, {}> {
     constructor(props: BarChartProps) {
         super(props);
 
-        this.Plotly = require("plotly.js/dist/plotly") as any;
         this.getPlotlyNodeRef = this.getPlotlyNodeRef.bind(this);
         this.onResize = this.onResize.bind(this);
     }
@@ -55,7 +53,7 @@ class BarChart extends Component<BarChartProps, {}> {
 
     componentWillUnmount() {
         if (this.plotlyNode) {
-            this.Plotly.purge(this.plotlyNode);
+            purge(this.plotlyNode);
         }
         window.removeEventListener("resize", this.onResize);
     }
@@ -93,7 +91,7 @@ class BarChart extends Component<BarChartProps, {}> {
     private renderChart(props: BarChartProps) {
         const { data, config, layout } = props;
         if (this.plotlyNode) {
-             this.Plotly.newPlot(this.plotlyNode, data && data.length ? data : this.data, layout, config);
+             newPlot(this.plotlyNode, data && data.length ? data : this.data, layout, config);
         }
     }
 
@@ -112,7 +110,7 @@ class BarChart extends Component<BarChartProps, {}> {
     }
 
     private onResize() {
-        this.Plotly.Plots.resize(this.plotlyNode);
+        Plots.resize(this.plotlyNode);
     }
 }
 
