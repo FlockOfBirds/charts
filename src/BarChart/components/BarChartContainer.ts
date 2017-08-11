@@ -49,8 +49,11 @@ class BarChartContainer extends Component<BarChartContainerProps, BarChartContai
     constructor(props: BarChartContainerProps) {
         super(props);
 
-        this.state = { data: [] };
-        this.handleSubscription = this.handleSubscription.bind(this);
+        this.state = {
+            alertMessage: BarChartContainer.validateProps(this.props),
+            data: []
+        };
+        this.fetchData = this.fetchData.bind(this);
     }
 
     render() {
@@ -84,50 +87,62 @@ class BarChartContainer extends Component<BarChartContainerProps, BarChartContai
         this.fetchData(newProps.mxObject);
     }
 
+    componentWillUnmount() {
+        if (this.subscriptionHandles) {
+            this.subscriptionHandles.forEach(mx.data.unsubscribe);
+        }
+    }
+
+    public static validateProps(props: BarChartContainerProps): string {
+        let errorMessage = "";
+        if (props.dataSourceType === "microflow" && !props.dataSourceMicroflow) {
+            errorMessage += ` data source type is set to 'Microflow' but 'Source microflow' is missing \n`;
+        }
+
+        return errorMessage && `Configuration error :\n\n ${errorMessage}`;
+    }
+
     private resetSubscriptions(mxObject?: mendix.lib.MxObject) {
         this.subscriptionHandles.forEach(mx.data.unsubscribe);
         this.subscriptionHandles = [];
 
         if (mxObject) {
             this.subscriptionHandles.push(mx.data.subscribe({
-                callback: this.handleSubscription,
+                callback: () => this.fetchData(mxObject),
                 guid: mxObject.getGuid()
             }));
         }
     }
 
-    private handleSubscription() {
-        this.fetchData(this.props.mxObject);
-    }
-
     private fetchData(mxObject?: mendix.lib.MxObject) {
         if (mxObject && this.props.seriesEntity) {
                 if (this.props.dataSourceType === "xpath") {
-                    this.fetchByXpath(mxObject ? mxObject.getGuid() : "");
+                    this.fetchByXpath(mxObject.getGuid());
                 } else if (this.props.dataSourceType === "microflow" && this.props.dataSourceMicroflow) {
                     this.fetchByMicroflow(mxObject.getGuid());
                 }
         }
     }
 
-    private fetchByXpath(contextGuid: string) {
-        const { entityConstraint } = this.props;
-        const requiresContext = entityConstraint && entityConstraint.indexOf("[%CurrentObject%]") > -1;
-        if (!contextGuid && requiresContext) {
-            this.setState({ data: [] });
-            return;
-        }
-        const constraint = entityConstraint ? entityConstraint.replace("[%CurrentObject%]", contextGuid) : "";
+    private fetchByXpath(guid: string) {
+        const { seriesEntity } = this.props;
+        const constraint = this.props.entityConstraint
+            ? this.props.entityConstraint.replace("[%CurrentObject%]", guid)
+            : "";
+        const entityName = seriesEntity.indexOf("/") > -1
+            ? seriesEntity.split("/")[seriesEntity.split("/").length - 1]
+            : seriesEntity;
+        const xpath = "//" + entityName + constraint;
         window.mx.data.get(
             {
             callback: mxObjects => this.fetchDataFromSeries(mxObjects as mendix.lib.MxObject[]),
             error: error => window.mx.ui.error(
-                `An error occurred while retrieving data via XPath (${entityConstraint}): ${error}`
+                `An error occurred while retrieving data via XPath (${xpath}): ${error}`
             ),
             filter: {
                 sort: [ [ this.props.xAxisSortAttribute, "asc" ] ]
             },
-            xpath: `//${this.props.seriesEntity}${constraint}`
+            xpath
         });
     }
 
