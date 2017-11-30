@@ -11,6 +11,7 @@
             <widgetFile path="HeatMap/HeatMap.xml"/>
             <widgetFile path="BubbleChart/BubbleChart.xml"/>
             <widgetFile path="PolarChart/PolarChart.xml"/>
+            <widgetFile path="AnyChart/AnyChart.xml"/>
         </widgetFiles>
         <files>
             <file path="com/mendix/widget/custom/ColumnChart"/>
@@ -22,6 +23,7 @@
             <file path="com/mendix/widget/custom/HeatMap"/>
             <file path="com/mendix/widget/custom/BubbleChart"/>
             <file path="com/mendix/widget/custom/PolarChart"/>
+            <file path="com/mendix/widget/custom/AnyChart"/>
         </files>
     </clientModule>
 </package>

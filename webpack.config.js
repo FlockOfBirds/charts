@@ -16,7 +16,8 @@ const widgetConfig = {
         TimeSeries: "./src/TimeSeries/components/TimeSeriesContainer.ts",
         HeatMap: "./src/HeatMap/components/HeatMapContainer.ts",
         BubbleChart: "./src/BubbleChart/components/BubbleChartContainer.ts",
-        PolarChart: "./src/PolarChart/components/PolarChartContainer.ts"
+        PolarChart: "./src/PolarChart/components/PolarChartContainer.ts",
+        AnyChart: "./src/AnyChart/components/AnyChartContainer.ts"
     },
     output: {
         path: path.resolve(__dirname, "dist/tmp/src"),
@@ -89,7 +90,8 @@ const previewConfig = {
         TimeSeries: "./src/TimeSeries/TimeSeries.webmodeler.ts",
         HeatMap:  "./src/HeatMap/HeatMap.webmodeler.ts",
         BubbleChart: "./src/BubbleChart/BubbleChart.webmodeler.ts",
-        PolarChart: "./src/PolarChart/PolarChart.webmodeler.ts"
+        PolarChart: "./src/PolarChart/PolarChart.webmodeler.ts",
+        AnyChart: "./src/AnyChart/AnyChart.webmodeler.ts"
     },
     output: {
         path: path.resolve(__dirname, "dist/tmp"),

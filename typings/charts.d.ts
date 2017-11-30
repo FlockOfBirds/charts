@@ -35,4 +35,8 @@ declare module "plotly.js/dist/plotly" {
     export = Plotly;
 }
 
+declare module "plotly.js/dist/plotly" {
+    export = Plotly;
+}
+
 declare module "*.json";
