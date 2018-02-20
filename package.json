@@ -10,6 +10,7 @@
     "test": "npm run test:unit && npm run test:conditional",
     "emit": "tsc",
     "lint": "tslint -c tslint.json '**/*.ts' --exclude '**/node_modules/**'",
+    "lint:fix": "npm run lint --fix",
     "test:dev": "karma start",
     "test:unit": "karma start --single-run --codeCoverage && node tests/remap.js",
     "test:conditional": "node ./node_modules/mendix-widget-build-script/dist/CheckPullRequestFromFork.js && echo 'Skip tests on forked pull request' || npm run deploy",
