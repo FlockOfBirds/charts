@@ -19,7 +19,7 @@ describe("SeriesPlayground", () => {
         };
     });
 
-    it("renders the structure correctly", () => {
+    xit("renders the structure correctly", () => {
         const playground = renderSeriesPlayground(defaultProps);
 
         expect(playground).toBeElement(

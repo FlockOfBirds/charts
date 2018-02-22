@@ -4,6 +4,7 @@ import { ScatterData, ScatterHoverData } from "plotly.js";
 
 import { Alert } from "../components/Alert";
 import { BarChart, BarChartProps } from "../BarChart/components/BarChart";
+import { preview } from "../BarChart/BarChart.webmodeler";
 import { ChartLoading } from "../components/ChartLoading";
 import { PlotlyChart } from "../components/PlotlyChart";
 import "../components/SeriesPlayground";
