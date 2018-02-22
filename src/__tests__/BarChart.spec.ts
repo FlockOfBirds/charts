@@ -4,6 +4,7 @@ import { ScatterData, ScatterHoverData } from "plotly.js";
 
 import { Alert } from "../components/Alert";
 import { BarChart, BarChartProps } from "../BarChart/components/BarChart";
+import { preview } from "../BarChart/BarChart.webmodeler";
 import { ChartLoading } from "../components/ChartLoading";
 import { PlotlyChart } from "../components/PlotlyChart";
 import "../components/SeriesPlayground";
@@ -155,10 +156,58 @@ describe("BarChart", () => {
         expect(chartInstance.getLayoutOptions(defaultProps)).toEqual(
             BarChart.defaultLayoutConfigs(defaultProps as BarChartProps)
         );
+
     });
 
     it("with the devMode developer should merge the modeler JSON layout options", () => {
         defaultProps.layoutOptions = "{ \"title\": \"My Title\" }";
+        defaultProps.devMode = "developer";
+        const chart = renderShallowBarChart(defaultProps as BarChartProps);
+        const chartInstance: any = chart.instance();
+
+        expect(chartInstance.getLayoutOptions(defaultProps)).toEqual({
+            ...BarChart.defaultLayoutConfigs(defaultProps as BarChartProps),
+            title: "My Title"
+        });
+    });
+
+    it("with the devMode advanced should merge the modeler JSON layout options", () => {
+        defaultProps.layoutOptions = "{ \"title\": \"My Title\" }";
+        defaultProps.devMode = "advanced";
+        const chart = renderShallowBarChart(defaultProps as BarChartProps);
+        const chartInstance: any = chart.instance();
+
+        expect(chartInstance.getLayoutOptions(defaultProps)).toEqual({
+            ...BarChart.defaultLayoutConfigs(defaultProps as BarChartProps),
+            title: "My Title"
+        });
+    });
+
+    it("with the devMode basic should not merge the modeler JSON series options", () => {
+        defaultProps.scatterData = preview.getData(defaultProps as BarChartProps);
+        defaultProps.seriesOptions = [ "{ \"orientation\": \"v\" }" ];
+        defaultProps.devMode = "basic";
+        const chart = renderShallowBarChart(defaultProps as BarChartProps);
+        const chartInstance: any = chart.instance();
+
+        expect(chartInstance.getData(defaultProps)).toEqual(defaultProps.scatterData);
+    });
+
+    it("with the devMode advanced should merge the modeler JSON series options", () => {
+        defaultProps.scatterData = preview.getData(defaultProps as BarChartProps);
+        defaultProps.seriesOptions = [ "{ \"orientation\": \"v\" }" ];
+        defaultProps.devMode = "advanced";
+        const chart = renderShallowBarChart(defaultProps as BarChartProps);
+        const chartInstance: any = chart.instance();
+
+        expect(chartInstance.getData(defaultProps)).toEqual([
+            { ...defaultProps.scatterData[0], orientation: "v", customdata: undefined }
+        ]);
+    });
+
+    it("with the devMode developer should merge the modeler JSON series options", () => {
+        defaultProps.scatterData = preview.getData(defaultProps as BarChartProps);
+        defaultProps.seriesOptions = [ "{ \"orientation\": \"v\" }" ];
         defaultProps.devMode = "developer";
         const chart = renderShallowBarChart(defaultProps as BarChartProps);
         const chartInstance: any = chart.instance();
