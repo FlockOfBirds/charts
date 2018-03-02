@@ -13,7 +13,10 @@ const widgetConfig = {
         LineChart: "./src/LineChart/components/LineChartContainer.ts",
         AreaChart: "./src/AreaChart/components/AreaChartContainer.ts",
         PieChart: "./src/PieChart/components/PieChartContainer.ts",
-        AnyChart: "./src/AnyChart/components/AnyChartContainer.ts"
+        AnyChart: "./src/AnyChart/components/AnyChartContainer.ts",
+        TimeSeries: "./src/TimeSeries/components/TimeSeriesContainer.ts",
+        HeatMap: "./src/HeatMap/components/HeatMapContainer.ts",
+        BubbleChart: "./src/BubbleChart/components/BubbleChartContainer.ts"
     },
     output: {
         path: path.resolve(__dirname, "dist/tmp/src"),
@@ -85,7 +88,8 @@ const previewConfig = {
         PieChart: "./src/PieChart/PieChart.webmodeler.ts",
         TimeSeries: "./src/TimeSeries/TimeSeries.webmodeler.ts",
         HeatMap:  "./src/HeatMap/HeatMap.webmodeler.ts",
-        AnyChart: "./src/AnyChart/AnyChart.webmodeler.ts"
+        AnyChart: "./src/AnyChart/AnyChart.webmodeler.ts",
+        BubbleChart: "./src/BubbleChart/BubbleChart.webmodeler.ts"
     },
     output: {
         path: path.resolve(__dirname, "dist/tmp"),
