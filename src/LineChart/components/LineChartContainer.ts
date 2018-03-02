@@ -23,6 +23,7 @@ export default class LineChartContainer extends Component<LineChartContainerProp
     };
     private subscriptionHandle?: number;
     private defaultColors: string[] = [ "#2CA1DD", "#76CA02", "#F99B1D", "#B765D1" ];
+    private intervalID?: number;
 
     render() {
         return createElement("div",
@@ -50,16 +51,37 @@ export default class LineChartContainer extends Component<LineChartContainerProp
             this.setState({ loading: true });
         }
         this.fetchData(newProps.mxObject);
+        this.setRefreshInterval(newProps.refreshInterval, newProps.mxObject);
     }
 
     componentWillUnmount() {
         if (this.subscriptionHandle) {
             mx.data.unsubscribe(this.subscriptionHandle);
         }
+        this.clearRefreshInterval();
+    }
+
+    private setRefreshInterval(refreshInterval: number, mxObject?: mendix.lib.MxObject) {
+        if (refreshInterval > 0 && mxObject) {
+            this.clearRefreshInterval();
+            this.intervalID = window.setInterval(() => {
+                if (!this.state.loading) {
+                    this.fetchData(mxObject);
+                }
+            }, refreshInterval);
+        }
+    }
+
+    private clearRefreshInterval() {
+        if (this.intervalID) {
+            window.clearInterval(this.intervalID);
+        }
     }
 
     private resetSubscriptions(mxObject?: mendix.lib.MxObject) {
-        this.componentWillUnmount();
+        if (this.subscriptionHandle) {
+            mx.data.unsubscribe(this.subscriptionHandle);
+        }
         if (mxObject) {
             this.subscriptionHandle = mx.data.subscribe({
                 callback: () => this.fetchData(mxObject),

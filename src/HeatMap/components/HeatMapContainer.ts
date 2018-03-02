@@ -19,6 +19,7 @@ interface HeatMapContainerState {
 export default class HeatMapContainer extends Component<HeatMapContainerProps, HeatMapContainerState> {
     private subscriptionHandle?: number;
     private rawData: mendix.lib.MxObject[] = [];
+    private intervalID?: number;
 
     constructor(props: HeatMapContainerProps) {
         super(props);
@@ -39,12 +40,31 @@ export default class HeatMapContainer extends Component<HeatMapContainerProps, H
         this.resetSubscriptions(newProps.mxObject);
         if (!this.state.alertMessage) {
             this.fetchData(newProps.mxObject);
+            this.setRefreshInterval(newProps.refreshInterval, newProps.mxObject);
         }
     }
 
     componentWillUnmount() {
         if (this.subscriptionHandle) {
             window.mx.data.unsubscribe(this.subscriptionHandle);
+        }
+        this.clearRefreshInterval();
+    }
+
+    private setRefreshInterval(refreshInterval: number, mxObject?: mendix.lib.MxObject) {
+        if (refreshInterval > 0 && mxObject) {
+            this.clearRefreshInterval();
+            this.intervalID = window.setInterval(() => {
+                if (!this.state.loading) {
+                    this.fetchData(mxObject);
+                }
+            }, refreshInterval);
+        }
+    }
+
+    private clearRefreshInterval() {
+        if (this.intervalID) {
+            window.clearInterval(this.intervalID);
         }
     }
 
