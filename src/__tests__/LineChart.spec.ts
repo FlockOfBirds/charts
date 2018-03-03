@@ -5,11 +5,13 @@ import { mockMendix } from "../../tests/mocks/Mendix";
 import { Alert } from "../components/Alert";
 import { ChartLoading } from "../components/ChartLoading";
 import { LineChart, LineChartProps } from "../LineChart/components/LineChart";
-import { preview } from "../LineChart/LineChart.webmodeler";
-import { Data } from "../utils/namespaces";
+import { Container, Data } from "../utils/namespaces";
 import "../components/SeriesPlayground";
 import { PlotlyChart } from "../components/PlotlyChart";
-import { ScatterHoverData } from "plotly.js";
+
+import { getRandomNumbers } from "../utils/data";
+import deepMerge from "deepmerge";
+import { ScatterData, ScatterHoverData } from "plotly.js";
 import LineSeriesProps = Data.LineSeriesProps;
 import SeriesData = Data.SeriesData;
 
@@ -34,7 +36,6 @@ describe("LineChart", () => {
     beforeEach(() => {
         defaultProps = {
             loading: false,
-            data: mockData,
             devMode: "basic",
             width: 100,
             widthUnit: "percentage",
@@ -63,10 +64,9 @@ describe("LineChart", () => {
     });
 
     it("whose dev mode is developer renders the playground", (done) => {
-        defaultProps.data = [];
+        defaultProps.devMode = "developer";
         const renderPlaygroundSpy = spyOn(LineChart.prototype, "renderPlayground" as any).and.callThrough();
         const chart = renderShallowChart(defaultProps as LineChartProps);
-        chart.setProps({ devMode: "developer" });
 
         window.setTimeout(() => {
             expect(renderPlaygroundSpy).toHaveBeenCalled();
@@ -75,8 +75,31 @@ describe("LineChart", () => {
         }, 500);
     });
 
+    it("whose dev mode is advanced does not render the playground", (done) => {
+        defaultProps.devMode = "advanced";
+        const renderPlaygroundSpy = spyOn(LineChart.prototype, "renderPlayground" as any).and.callThrough();
+        const chart = renderShallowChart(defaultProps as LineChartProps);
+
+        window.setTimeout(() => {
+            expect(renderPlaygroundSpy).not.toHaveBeenCalled();
+
+            done();
+        }, 500);
+    });
+
+    it("whose dev mode is basic does not render the playground", (done) => {
+        defaultProps.devMode = "basic";
+        const renderPlaygroundSpy = spyOn(LineChart.prototype, "renderPlayground" as any).and.callThrough();
+        const chart = renderShallowChart(defaultProps as LineChartProps);
+
+        window.setTimeout(() => {
+            expect(renderPlaygroundSpy).not.toHaveBeenCalled();
+
+            done();
+        }, 500);
+    });
+
     it("with no alert message, isn't loading and whose dev mode isn't set to developer renders the chart correctly", () => {
-        defaultProps.data = [];
         const chart = renderShallowChart(defaultProps as LineChartProps);
 
         expect(chart).toBeElement(
@@ -95,25 +118,112 @@ describe("LineChart", () => {
         );
     });
 
-    xit("updates the data & layout options when the props are updated", () => {
+    it("updates the state with the new props when the props are changed", () => {
         const chart = renderShallowChart(defaultProps as LineChartProps);
+        defaultProps.layoutOptions = "{}";
+        defaultProps.seriesOptions = [ "{}" ];
+        defaultProps.series = [
+            {
+                name: "Series 2",
+                seriesOptions: "",
+                tooltipForm: "myTooltipForm.xml"
+            }
+        ] as LineSeriesProps[];
+        defaultProps.scatterData = [
+            {
+                x: [ 1, 2, 3 ],
+                y: [ 2, 4, 6 ]
+            }
+        ] as ScatterData[];
+        chart.setProps(defaultProps as LineChartProps);
 
-        expect(chart.state().layoutOptions).toEqual("{}");
-        expect(chart.state().data).toEqual(mockData);
-
-        const layoutOptions = "{ \"title\": \"My Chart\" }";
-        chart.setProps({ layoutOptions, data: undefined });
-
-        expect(chart.state().layoutOptions).toEqual(layoutOptions);
-        expect(chart.state().data).toBeUndefined();
+        expect(chart.state()).toEqual({
+            layoutOptions: defaultProps.layoutOptions,
+            series: defaultProps.series,
+            seriesOptions: defaultProps.seriesOptions,
+            scatterData: defaultProps.scatterData,
+            playgroundLoaded: false
+        });
     });
 
-    it("renders the default data when no data has been provided", () => {
-        defaultProps.data = undefined;
-        defaultProps.defaultData = preview.getData(defaultProps as LineChartProps);
+    it("with the devMode basic should not merge the modeler JSON layout options", () => {
+        defaultProps.layoutOptions = "{ 'title': 'My Title' }";
+        defaultProps.devMode = "basic";
+        const chart = renderShallowChart(defaultProps as LineChartProps);
+        const chartInstance: any = chart.instance();
+
+        expect(chartInstance.getLayoutOptions(defaultProps)).toEqual(
+            LineChart.defaultLayoutConfigs(defaultProps as LineChartProps)
+        );
+    });
+
+    it("with the devMode developer should merge the modeler JSON layout options", () => {
+        defaultProps.layoutOptions = "{ \"title\": \"My Title\" }";
+        defaultProps.devMode = "developer";
+        const chart = renderShallowChart(defaultProps as LineChartProps);
+        const chartInstance: any = chart.instance();
+
+        expect(chartInstance.getLayoutOptions(defaultProps)).toEqual({
+            ...LineChart.defaultLayoutConfigs(defaultProps as LineChartProps),
+            title: "My Title"
+        });
+    });
+
+    it("with the devMode advanced should merge the modeler JSON layout options", () => {
+        defaultProps.layoutOptions = "{ \"title\": \"My Title\" }";
+        defaultProps.devMode = "advanced";
+        const chart = renderShallowChart(defaultProps as LineChartProps);
+        const chartInstance: any = chart.instance();
+
+        expect(chartInstance.getLayoutOptions(defaultProps)).toEqual({
+            ...LineChart.defaultLayoutConfigs(defaultProps as LineChartProps),
+            title: "My Title"
+        });
+    });
+
+    it("with the devMode basic should not merge the modeler JSON series options", () => {
+        defaultProps.scatterData = getData(defaultProps as LineChartProps);
+        defaultProps.seriesOptions = [ "{ \"mode\": \"lines\" }" ];
+        defaultProps.devMode = "basic";
+        const chart = renderShallowChart(defaultProps as LineChartProps);
+        const chartInstance: any = chart.instance();
+
+        expect(chartInstance.getData(defaultProps)).toEqual([
+            { ...defaultProps.scatterData[0], customdata: undefined }
+        ]);
+    });
+
+    it("with the devMode advanced should merge the modeler JSON series options", () => {
+        defaultProps.scatterData = getData(defaultProps as LineChartProps);
+        defaultProps.seriesOptions = [ "{ \"mode\": \"markers\" }" ];
+        defaultProps.devMode = "advanced";
+        const chart = renderShallowChart(defaultProps as LineChartProps);
+        const chartInstance: any = chart.instance();
+
+        expect(chartInstance.getData(defaultProps)).toEqual([
+            { ...defaultProps.scatterData[0], mode: "markers", customdata: undefined }
+        ]);
+    });
+
+    it("with the devMode developer should merge the modeler JSON series options", () => {
+        defaultProps.scatterData = getData(defaultProps as LineChartProps);
+        defaultProps.seriesOptions = [ "{ \"mode\": \"lines\" }" ];
+        defaultProps.devMode = "developer";
+        const chart = renderShallowChart(defaultProps as LineChartProps);
+        const chartInstance: any = chart.instance();
+
+        expect(chartInstance.getData(defaultProps)).toEqual([
+            { ...defaultProps.scatterData[0], mode: "lines", customdata: undefined }
+        ]);
+    });
+
+    it("that is configured as stacked generates the stacked chart data", () => {
+        const stackedAreaSpy = spyOn(LineChart, "getStackedArea" as any).and.callThrough();
+        defaultProps.area = "stacked";
+        defaultProps.scatterData = getData(defaultProps as LineChartProps);
         const chart = renderShallowChart(defaultProps as LineChartProps);
 
-        expect((chart.instance() as any).getData(defaultProps)).toBe(defaultProps.defaultData);
+        expect(stackedAreaSpy).toHaveBeenCalled();
     });
 
     describe("event handler", () => {
@@ -141,7 +251,7 @@ describe("LineChart", () => {
             ]
         };
 
-        xit("#onClick() calls the parent onClick handler", () => {
+        it("#onClick() calls the parent onClick handler", () => {
             defaultProps.onClick = jasmine.createSpy("onClick");
             const chart = renderShallowChart(defaultProps as LineChartProps);
             (chart.instance() as any).onClick(plotlyEventData);
@@ -149,7 +259,7 @@ describe("LineChart", () => {
             expect(defaultProps.onClick).toHaveBeenCalled();
         });
 
-        xit("#onHover() calls the parent onClick handler", () => {
+        it("#onHover() calls the parent onClick handler", () => {
             defaultProps.onHover = jasmine.createSpy("onHover");
             const chart = renderFullChart(defaultProps as LineChartProps);
             const instance = chart.instance() as any;
@@ -160,12 +270,51 @@ describe("LineChart", () => {
         });
     });
 
-    xit("saves a reference of the tooltip node", () => {
-        const tooltipNodeSpy = spyOn(LineChart.prototype, "getTooltipNodeRef" as any).and.callThrough();
+    it("saves a reference of the tooltip node", () => {
         const chart = renderFullChart(defaultProps as LineChartProps);
         const instance: any = chart.instance();
 
-        expect(tooltipNodeSpy).toHaveBeenCalled();
         expect(instance.tooltipNode).not.toBeUndefined();
     });
 });
+
+const getData = (props: Container.LineChartContainerProps): ScatterData[] => {
+    if (props.series.length) {
+        return props.series.map(series => {
+            const seriesOptions = props.devMode !== "basic" && series.seriesOptions.trim()
+                ? JSON.parse(series.seriesOptions)
+                : {};
+            const sampleData = getSampleTraces();
+
+            return deepMerge.all([ {
+                connectgaps: true,
+                hoveron: "points",
+                line: {
+                    color: series.lineColor,
+                    shape: series.lineStyle
+                },
+                mode: series.mode ? series.mode.replace("X", "+") as Container.LineMode : "lines",
+                name: series.name,
+                type: "scatter",
+                fill: "none",
+                x: sampleData.x || [],
+                y: sampleData.y || []
+            }, seriesOptions ]);
+        });
+    }
+
+    return [ {
+        connectgaps: true,
+        hoveron: "points",
+        name: "Sample",
+        type: "scatter",
+        ...getSampleTraces()
+    } as ScatterData ];
+};
+
+const getSampleTraces = (): { x: (string | number)[], y: (string | number)[] } => {
+    return {
+        x: [ "Sample 1", "Sample 2", "Sample 3", "Sample 4" ],
+        y: getRandomNumbers(4, 100)
+    };
+};
