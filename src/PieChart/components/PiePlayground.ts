@@ -127,10 +127,11 @@ export class PiePlayground extends Component<PiePlaygroundProps, PiePlaygroundSt
             try {
                 if (this.isValid && JSON.parse(value)) {
                     this.updateChart(source, value);
+                } else {
+                    this.updateChart(source, Playground.convertJSToJSON(value));
                 }
             } catch (error) {
                 this.isValid = false;
-                console.error("An error occured while updating the playground chart", error); // tslint:disable-line
             }
         }, 1000);
     }
