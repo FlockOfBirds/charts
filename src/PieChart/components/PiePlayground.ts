@@ -123,7 +123,7 @@ export class PiePlayground extends Component<PiePlaygroundProps, PiePlaygroundSt
         if (this.timeoutId) {
             clearTimeout(this.timeoutId);
         }
-        this.timeoutId = setTimeout(() => {
+        this.timeoutId = window.setTimeout(() => {
             try {
                 if (this.isValid) {
                     this.updateChart(source, JSON.stringify(JSON.parse(value), null, 2));
