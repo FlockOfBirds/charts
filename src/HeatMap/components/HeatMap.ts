@@ -2,15 +2,15 @@ import { Component, ReactChild, ReactElement, createElement } from "react";
 
 import { Alert } from "../../components/Alert";
 import { ChartLoading } from "../../components/ChartLoading";
-
-import { Container } from "../../utils/namespaces";
-import HeatMapContainerProps = Container.HeatMapContainerProps;
-
-import deepMerge from "deepmerge";
 import { PiePlayground } from "../../PieChart/components/PiePlayground";
 import { PlotlyChart } from "../../components/PlotlyChart";
+
+import deepMerge from "deepmerge";
 import { HeatMapData, Layout, ScatterHoverData } from "plotly.js";
 import { getDimensions, parseStyle } from "../../utils/style";
+import * as sharedLayoutConfigs from "../../common/layout.json";
+import { Container } from "../../utils/namespaces";
+import HeatMapContainerProps = Container.HeatMapContainerProps;
 
 import "../../ui/Charts.scss";
 
@@ -191,7 +191,7 @@ export class HeatMap extends Component<HeatMapProps, HeatMapState> {
     }
 
     public static getDefaultLayoutOptions(props: HeatMapProps): Partial<Layout> {
-        return {
+        const dynamicConfigs = {
             autosize: true,
             showarrow: false,
             xaxis: {
@@ -202,21 +202,12 @@ export class HeatMap extends Component<HeatMapProps, HeatMapState> {
                 fixedrange: true,
                 title: props.yAxisLabel
             },
-            hoverlabel: {
-                bgcolor: "#888",
-                bordercolor: "#888",
-                font: {
-                    color: "#FFF"
-                }
-            },
             margin: {
-                l: 80,
-                r: 60,
-                b: 60,
-                t: 10,
-                pad: 10
+                l: 80
             }
         };
+
+        return deepMerge.all([ sharedLayoutConfigs, dynamicConfigs ]);
     }
 
     public static getDefaultDataOptions(props: HeatMapProps): Partial<HeatMapData> {

@@ -1,0 +1,39 @@
+{
+  "font": {
+      "family": "Open Sans, sans-serif",
+      "size": 12,
+      "color": "#888"
+  },
+  "autosize": true,
+  "hovermode": "closest",
+  "showlegend": true,
+  "xaxis": {
+      "gridcolor": "#eaeaea",
+      "zerolinecolor": "#eaeaea",
+      "showgrid": "both",
+      "fixedrange": true,
+      "rangeslider": { "visible": false }
+  },
+  "yaxis": {
+      "rangemode": "tozero",
+      "zeroline": true,
+      "zerolinecolor": "#eaeaea",
+      "gridcolor": "#eaeaea",
+      "showgrid": "both",
+      "fixedrange": true
+  },
+  "hoverlabel": {
+      "bgcolor": "#888",
+      "bordercolor": "#888",
+      "font": {
+          "color": "#FFF"
+      }
+  },
+  "margin": {
+      "l": 60,
+      "r": 60,
+      "b": 60,
+      "t": 10,
+      "pad": 10
+  }
+}

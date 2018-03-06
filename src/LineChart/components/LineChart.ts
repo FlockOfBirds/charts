@@ -10,6 +10,7 @@ import deepMerge from "deepmerge";
 import { Container, Data } from "../../utils/namespaces";
 import { Config, Layout, ScatterData, ScatterHoverData } from "plotly.js";
 import { getDimensions, parseStyle } from "../../utils/style";
+import * as sharedLayoutConfigs from "../../common/layout.json";
 
 import SeriesData = Data.SeriesData;
 import LineChartContainerProps = Container.LineChartContainerProps;
@@ -178,17 +179,9 @@ export class LineChart extends Component<LineChartProps, LineChartState> {
     }
 
     public static defaultLayoutConfigs(props: LineChartProps): Partial<Layout> {
-        return {
-            font: {
-                family: "Open Sans, sans-serif",
-                size: 12,
-                color: "#888"
-            },
-            autosize: true,
-            hovermode: "closest",
+        const dynamicConfigs = {
             showlegend: props.showLegend,
             xaxis: {
-                gridcolor: "#eaeaea",
                 title: props.xAxisLabel,
                 showgrid: props.grid === "vertical" || props.grid === "both",
                 fixedrange: props.xAxisType !== "date",
@@ -196,29 +189,12 @@ export class LineChart extends Component<LineChartProps, LineChartState> {
                 rangeslider: { visible: props.showRangeSlider || false }
             },
             yaxis: {
-                rangemode: "tozero",
-                zeroline: true,
-                zerolinecolor: "#eaeaea",
-                gridcolor: "#eaeaea",
                 title: props.yAxisLabel,
-                showgrid: props.grid === "horizontal" || props.grid === "both",
-                fixedrange: true
-            },
-            hoverlabel: {
-                bgcolor: "#888",
-                bordercolor: "#888",
-                font: {
-                    color: "#FFF"
-                }
-            },
-            margin: {
-                l: 60,
-                r: 60,
-                b: 60,
-                t: 10,
-                pad: 10
+                showgrid: props.grid === "horizontal" || props.grid === "both"
             }
         };
+
+        return deepMerge.all([ sharedLayoutConfigs, dynamicConfigs ]);
     }
 
     public static getConfigOptions(): Partial<Config> {

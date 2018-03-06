@@ -3,15 +3,16 @@ import { Component, ReactChild, ReactElement, createElement } from "react";
 import { Alert } from "../../components/Alert";
 import { ChartLoading } from "../../components/ChartLoading";
 import { PlotlyChart } from "../../components/PlotlyChart";
+import { PiePlayground } from "./PiePlayground";
 
 import deepMerge from "deepmerge";
 import { Container } from "../../utils/namespaces";
 import { Config, Layout, PieData, PieHoverData, ScatterHoverData } from "plotly.js";
 import { getDimensions, parseStyle } from "../../utils/style";
+import * as sharedLayoutConfigs from "../../common/layout.json";
 import PieChartContainerProps = Container.PieChartContainerProps;
 
 import "../../ui/Charts.scss";
-import { PiePlayground } from "./PiePlayground";
 
 export interface PieChartProps extends PieChartContainerProps {
     data?: mendix.lib.MxObject[];
@@ -174,34 +175,16 @@ export class PieChart extends Component<PieChartProps, PieChartState> {
     }
 
     public static getDefaultLayoutOptions(props: PieChartProps): Partial<Layout> {
-        return {
-            font: {
-                family: "Open Sans, sans-serif",
-                size: 12,
-                color: "#FFF"
-            },
-            autosize: true,
+        const dynamicConfigs = {
             showlegend: props.showLegend,
-            hoverlabel: {
-                bgcolor: "#888",
-                bordercolor: "#888",
-                font: {
-                    color: "#FFF"
-                }
-            },
             legend: {
                 font: {
                     color: "#888"
                 }
-            },
-            margin: {
-                l: 60,
-                r: 60,
-                b: 60,
-                t: 10,
-                pad: 10
             }
         };
+
+        return deepMerge.all([ sharedLayoutConfigs, dynamicConfigs ]);
     }
 
     public static getDefaultDataOptions(props: PieChartProps): Partial<PieData> {
