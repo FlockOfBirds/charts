@@ -48,6 +48,10 @@ export class BarChart extends Component<BarChartProps, BarChartState> {
         };
     }
 
+    componentDidMount() {
+        this.fetchCustomLayoutConfigs();
+    }
+
     render() {
         if (this.props.alertMessage) {
             return createElement(Alert, { className: "widget-charts-bar-alert" }, this.props.alertMessage);
@@ -117,11 +121,15 @@ export class BarChart extends Component<BarChartProps, BarChartState> {
     }
 
     private getLayoutOptions(props: BarChartProps): Partial<Layout> {
-        const advancedOptions = props.devMode !== "basic" && this.state.layoutOptions
-            ? JSON.parse(this.state.layoutOptions)
-            : {};
+        const advancedOptions = this.getAdvancedLayoutOptions(props);
 
         return deepMerge.all([ BarChart.defaultLayoutConfigs(props), advancedOptions ]);
+    }
+
+    private getAdvancedLayoutOptions(props: BarChartProps): Partial<Layout> {
+        return props.devMode !== "basic" && this.state.layoutOptions
+            ? JSON.parse(this.state.layoutOptions)
+            : {};
     }
 
     private getData(props: BarChartProps): ScatterData[] {
@@ -175,6 +183,20 @@ export class BarChart extends Component<BarChartProps, BarChartState> {
 
     private onRuntimeUpdate(layoutOptions: string, data: Data.SeriesData[]) {
         this.setState({ layoutOptions, data });
+    }
+
+    private fetchCustomLayoutConfigs() {
+        try {
+            if (window.mx) {
+                const url = `${window.mx.baseUrl}../widgets/com.mendix.charts.json`;
+                const customConfigs: any = require("" + url);
+                this.setState({
+                    layoutOptions: deepMerge.all([ this.getAdvancedLayoutOptions(this.props), customConfigs ])
+                });
+            }
+        } catch (error) {
+            console.log("charts.json file not found:", error.message); // tslint:disable-line
+        }
     }
 
     private static getConfigOptions(): Partial<Config> {
