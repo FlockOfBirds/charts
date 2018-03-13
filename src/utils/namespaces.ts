@@ -1,4 +1,4 @@
-import { AxisType, BarMode, Datum, ScatterData } from "plotly.js";
+import { AxisType, BarMode, Datum, ScatterData, ScatterMarker } from "plotly.js";
 import { ReactChild } from "react";
 
 export namespace Container {
@@ -157,7 +157,7 @@ export namespace Data {
         xValueSortAttribute: string;
         sortOrder: SortOrder;
         yValueAttribute: string;
-        bubbleSizeAttribute?: string;
+        markerSizeAttribute?: string;
     }
 
     export type SortOrder = "asc" | "desc";
@@ -192,7 +192,7 @@ export namespace Data {
     export interface ScatterTrace {
         x: Datum[];
         y: number[] | Datum[];
-        size?: number[];
+        marker?: Partial<ScatterMarker>;
     }
 
     export interface ReferencesSpec {
