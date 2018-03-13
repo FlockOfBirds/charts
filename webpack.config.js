@@ -99,7 +99,7 @@ const previewConfig = {
     resolve: {
         extensions: [ ".ts", ".js" ]
     },
-    devtool: "inline-eval",
+    devtool: "eval",
     module: {
         rules: [
             { test: /\.ts$/, loader: "ts-loader", options: {
