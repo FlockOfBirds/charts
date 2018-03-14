@@ -67,7 +67,7 @@
                     </attributeTypes>
                 </property>
                 <property key="markerSizeAttribute" type="attribute" entityProperty="dataEntity">
-                    <caption>Bubble size data attribute</caption>
+                    <caption>Bubble size attribute</caption>
                     <category>Data points</category>
                     <description>The value determines the bubble size</description>
                     <attributeTypes>
