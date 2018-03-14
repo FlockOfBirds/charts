@@ -88,7 +88,7 @@ export class LineChart extends Component<LineChartProps, LineChartState> {
     private renderLineChart(): ReactElement<any> {
         return createElement(PlotlyChart,
             {
-                type: "line",
+                type: this.props.type || "line",
                 className: this.props.class,
                 style: { ...getDimensions(this.props), ...parseStyle(this.props.style) },
                 layout: this.getLayoutOptions(this.props),
@@ -238,8 +238,8 @@ export class LineChart extends Component<LineChartProps, LineChartState> {
             },
             mode: series.mode ? series.mode.replace("X", "+") as LineMode : "lines",
             name: series.name,
-            type: "scatter",
-            fill: props.fill || series.fill ? "tonexty" : "none"
+            type: props.type === "line" ? "scatter" : "scatterpolar" as any,
+            fill: props.fill || series.fill ? props.type === "line" ? "tonexty" : "toself" : "none"
         };
     }
 

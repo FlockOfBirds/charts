@@ -51,6 +51,7 @@ export namespace Container {
 
     export interface LineChartContainerProps extends WrapperProps, Style.Dimensions, Style.Appearance, LineLayoutProps {
         series: Data.LineSeriesProps[];
+        type?: "line" | "polar";
     }
 
     export interface LineChartContainerState {
@@ -115,6 +116,7 @@ export namespace Container {
         seriesOptions: string[];
         loading?: boolean;
     }
+
     export interface ScaleColors {
         valuePercentage: number;
         colour: number;
