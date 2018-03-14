@@ -43,7 +43,7 @@
                     <returnType type="Object" entityProperty="dataEntity" isList="true"/>
                 </property>
                 <property key="xValueAttribute" type="attribute" entityProperty="dataEntity" isPath="optional" pathType="reference">
-                    <caption>Name attribute</caption>
+                    <caption>X data attribute</caption>
                     <category>Data points</category>
                     <description>For data source Database, attributes over reference are supported with a maximum of one level deep. For data source Microflow, references are not supported.</description>
                     <attributeTypes>
@@ -56,7 +56,7 @@
                     </attributeTypes>
                 </property>
                 <property key="yValueAttribute" type="attribute" entityProperty="dataEntity">
-                    <caption>Value attribute</caption>
+                    <caption>Y data attribute</caption>
                     <category>Data points</category>
                     <description/>
                     <attributeTypes>
@@ -66,7 +66,7 @@
                     </attributeTypes>
                 </property>
                 <property key="xValueSortAttribute" type="attribute" entityProperty="dataEntity" required="false" isPath="optional" pathType="reference">
-                    <caption>Sort attribute</caption>
+                    <caption>X sort attribute</caption>
                     <category>Data points</category>
                     <description>For data source Database, attribute over reference is supported with a maximal of one level deep. For data source Microflow references are not supported</description>
                     <attributeTypes>
