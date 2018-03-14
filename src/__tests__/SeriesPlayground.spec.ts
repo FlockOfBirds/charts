@@ -19,7 +19,7 @@ describe("SeriesPlayground", () => {
         };
     });
 
-    xit("renders the structure correctly", () => {
+    it("renders the structure correctly", () => {
         const playground = renderSeriesPlayground(defaultProps);
 
         expect(playground).toBeElement(
@@ -139,15 +139,6 @@ describe("SeriesPlayground", () => {
         expect(playground.find(Select).length).toBe(1);
     });
 
-<<<<<<< HEAD
-=======
-    xit("does not render a panel switcher when no raw data is specified", () => {
-        const playground = renderSeriesPlayground(defaultProps);
-
-        expect(playground.find(Select).length).toBe(0);
-    });
-
->>>>>>> Enhance: BarChart unit tests
     it("renders the specified children last", () => {
         const playground = shallow(createElement(SeriesPlayground, defaultProps, createElement("div")));
 
