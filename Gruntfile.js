@@ -2,17 +2,14 @@
 const webpack = require("webpack");
 const webpackConfig = require("./webpack.config");
 const merge = require("webpack-merge");
-const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 const widgetNames = [ "LineChart", "PieChart", "ColumnChart", "BarChart", "TimeSeries", "HeatMap" ];
 
 const webpackConfigRelease = webpackConfig.map(config => merge(config, {
     devtool: false,
-    plugins: [ new UglifyJsPlugin({
-        parallel: true,
-        uglifyOptions: {
-            cache: true
-        }
-    }) ]
+    mode: "production",
+    optimization: {
+        minimize: true
+    }
 }));
 
 module.exports = function(grunt) {

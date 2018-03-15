@@ -32,6 +32,7 @@ const widgetConfig = {
         }
     },
     devtool: "eval",
+    mode: "development",
     module: {
         rules: [
             {
@@ -74,6 +75,7 @@ const plotlyCustomConfig = {
         libraryTarget: "amd",
     },
     devtool: "eval",
+    mode: "development",
     plugins: [
         new webpack.LoaderOptionsPlugin({ debug: true })
     ]
@@ -100,6 +102,7 @@ const previewConfig = {
         extensions: [ ".ts", ".js" ]
     },
     devtool: "eval",
+    mode: "development",
     module: {
         rules: [
             { test: /\.ts$/, loader: "ts-loader", options: {
