@@ -119,7 +119,7 @@ export namespace Container {
         valuePercentage: number;
         colour: number;
     }
-    export interface AnyChartContainerPropsBase extends WrapperProps, Style.Dimensions {
+    export interface AnyChartContainerPropsBase extends WrapperProps, Style.Dimensions, Style.Appearance {
         dataStatic: string;
         dataAttribute: string;
         layoutStatic: string;

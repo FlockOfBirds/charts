@@ -12,21 +12,14 @@ import AnyChartContainerState = Container.AnyChartContainerState;
 __webpack_public_path__ = window.mx ? `${window.mx.baseUrl}../widgets/` : "../widgets";
 
 export default class AnyChartContainer extends Component<AnyChartContainerProps, AnyChartContainerState> {
+    state: AnyChartContainerState = {
+        alertMessage: this.validateSeriesProps(this.props),
+        attributeData: "[]",
+        attributeLayout: "{}",
+        loading: false
+    };
     private subscriptionHandles: number[] = [];
-
-    constructor(props: AnyChartContainerProps) {
-        super(props);
-
-        this.state = {
-            alertMessage: this.validateSeriesProps(this.props),
-            attributeData: "[]",
-            attributeLayout: "{}",
-            loading: false
-        };
-
-        this.onClick = this.onClick.bind(this);
-        this.onHover = this.onHover.bind(this);
-    }
+    private intervalID?: number;
 
     render() {
         const anyProps: AnyChartProps = {
@@ -51,6 +44,7 @@ export default class AnyChartContainer extends Component<AnyChartContainerProps,
         this.resetSubscriptions(newProps.mxObject);
         this.setState({ loading: true });
         this.fetchData(newProps.mxObject);
+        this.setRefreshInterval(newProps.refreshInterval, newProps.mxObject);
     }
 
     private fetchData(mxObject?: mendix.lib.MxObject) {
@@ -72,6 +66,23 @@ export default class AnyChartContainer extends Component<AnyChartContainerProps,
             attributeData,
             attributeLayout
         });
+    }
+
+    private setRefreshInterval(refreshInterval: number, mxObject?: mendix.lib.MxObject) {
+        if (refreshInterval > 0 && mxObject) {
+            this.clearRefreshInterval();
+            this.intervalID = window.setInterval(() => {
+                if (!this.state.loading) {
+                    this.fetchData(mxObject);
+                }
+            }, refreshInterval);
+        }
+    }
+
+    private clearRefreshInterval() {
+        if (this.intervalID) {
+            window.clearInterval(this.intervalID);
+        }
     }
 
     private resetSubscriptions(mxObject?: mendix.lib.MxObject) {
@@ -99,7 +110,7 @@ export default class AnyChartContainer extends Component<AnyChartContainerProps,
         }
     }
 
-    private onClick(data: any) {
+    private onClick = (data: any) => {
         const { eventEntity, eventDataAttribute, onClickMicroflow } = this.props;
         if (eventEntity && eventDataAttribute && onClickMicroflow) {
             mx.data.create({
@@ -116,7 +127,7 @@ export default class AnyChartContainer extends Component<AnyChartContainerProps,
         }
     }
 
-    private onHover(data: any, tooltipNode: HTMLDivElement) {
+    private onHover = (data: any, tooltipNode: HTMLDivElement) => {
         const { eventEntity, eventDataAttribute, tooltipForm, tooltipMicroflow, tooltipEntity } = this.props;
         if (eventEntity && eventDataAttribute && tooltipForm && tooltipMicroflow && tooltipEntity) {
             mx.data.create({
