@@ -1,4 +1,4 @@
-import { AxisType, BarMode, Datum, ScatterData } from "plotly.js";
+import { AxisType, BarMode, Datum, ScatterData, ScatterMarker } from "plotly.js";
 import { ReactChild } from "react";
 
 export namespace Container {
@@ -37,27 +37,33 @@ export namespace Container {
 
     export type LineMode = "lines" | "markers" | "lines+markers" | "none";
 
-    export interface BarChartContainerProps extends WrapperProps, Style.Dimensions, BarLayoutProps {
+    export interface BarChartContainerProps extends WrapperProps, Style.Dimensions, Style.Appearance, BarLayoutProps {
         series: Data.SeriesProps[];
     }
 
     export interface BarChartContainerState {
         alertMessage?: ReactChild;
         data?: Data.SeriesData<SeriesProps>[];
+        scatterData?: ScatterData[];
+        seriesOptions: string[];
         loading?: boolean;
     }
 
-    export interface LineChartContainerProps extends WrapperProps, Style.Dimensions, LineLayoutProps {
+    export interface LineChartContainerProps extends WrapperProps, Style.Dimensions, Style.Appearance, LineLayoutProps {
         series: Data.LineSeriesProps[];
     }
 
     export interface LineChartContainerState {
         alertMessage?: ReactChild;
+        data?: Data.SeriesData<Data.LineSeriesProps>[];
+        scatterData?: ScatterData[];
+        seriesOptions: string[];
+        loading?: boolean;
     }
 
     export type PieChartType = "pie" | "donut";
 
-    export interface PieChartContainerProps extends Data.DataSourceProps, Style.Dimensions, Data.EventProps, WrapperProps {
+    export interface PieChartContainerProps extends Data.DataSourceProps, Style.Dimensions, Style.Appearance, Data.EventProps, WrapperProps {
         nameAttribute: string;
         valueAttribute: string;
         sortAttribute: string;
@@ -70,7 +76,7 @@ export namespace Container {
         devMode: "basic" | "advanced" | "developer";
     }
 
-    export interface HeatMapContainerProps extends Data.DataSourceProps, Style.Dimensions, Data.EventProps, WrapperProps {
+    export interface HeatMapContainerProps extends Data.DataSourceProps, Style.Dimensions, Style.Appearance, Data.EventProps, WrapperProps {
         valueAttribute: string;
         horizontalNameAttribute: string;
         horizontalSortAttribute: string;
@@ -89,6 +95,26 @@ export namespace Container {
         devMode: "basic" | "advanced" | "developer";
     }
 
+    export interface BubbleChartContainerProps extends Data.DataSourceProps, LayoutProps, Style.Dimensions, Data.EventProps, WrapperProps {
+        series: Data.SeriesProps[];
+        showLegend: boolean;
+        serieColor: string;
+        xAxisLabel: string;
+        yAxisLabel: string;
+        layoutOptions: string;
+        dataOptions: string;
+        devMode: "basic" | "advanced" | "developer";
+        refreshInterval: number;
+        showRangeSlider: boolean;
+    }
+
+    export interface BubbleChartContainerState {
+        alertMessage?: ReactChild;
+        data?: Data.SeriesData<Data.SeriesProps>[];
+        scatterData?: ScatterData[];
+        seriesOptions: string[];
+        loading?: boolean;
+    }
     export interface ScaleColors {
         valuePercentage: number;
         colour: number;
@@ -108,6 +134,7 @@ export namespace Data {
         xValueSortAttribute: string;
         sortOrder: SortOrder;
         yValueAttribute: string;
+        markerSizeAttribute?: string;
     }
 
     export type SortOrder = "asc" | "desc";
@@ -123,6 +150,7 @@ export namespace Data {
         name: string;
         seriesOptions: string;
         barColor: string;
+        color?: string; // All serie barColor, lineColor, bubbleColor etc should be replaced with 'color'
     }
 
     export interface LineSeriesProps extends SeriesProps {
@@ -141,6 +169,7 @@ export namespace Data {
     export interface ScatterTrace {
         x: Datum[];
         y: number[] | Datum[];
+        marker?: Partial<ScatterMarker>;
     }
 
     export interface ReferencesSpec {
@@ -159,5 +188,9 @@ export namespace Style {
         height: number;
         widthUnit: "percentage" | "pixels";
         heightUnit: "percentageOfWidth" | "pixels" | "percentageOfParent";
+    }
+
+    export interface Appearance {
+        refreshInterval: number;
     }
 }

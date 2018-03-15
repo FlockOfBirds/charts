@@ -19,7 +19,7 @@ export class preview extends Component<LineChartContainerProps, {}> {
             ),
             createElement(LineChart, {
                 ...this.props as LineChartContainerProps,
-                defaultData: preview.getData(this.props)
+                scatterData: preview.getData(this.props)
             })
         );
     }
@@ -27,7 +27,9 @@ export class preview extends Component<LineChartContainerProps, {}> {
     static getData(props: LineChartContainerProps): ScatterData[] {
         if (props.series.length) {
             return props.series.map(series => {
-                const seriesOptions = series.seriesOptions.trim() ? JSON.parse(series.seriesOptions) : {};
+                const seriesOptions = props.devMode !== "basic" && series.seriesOptions.trim()
+                    ? JSON.parse(series.seriesOptions)
+                    : {};
                 const sampleData = preview.getSampleTraces();
 
                 return deepMerge.all([ {

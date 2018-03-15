@@ -41,6 +41,7 @@ declare module "plotly.js" {
                 _offset: number;
             };
             customdata: T;
+            text: string;
         }>;
     }
 
@@ -90,6 +91,15 @@ declare module "plotly.js" {
         hoverinfo?: "label" | "percent" | "name" | "label+percent" | "label+name" | "percent+name" | "label+percent+name" | "skip" | "none";
         colorscale?: (string | number)[][];
         showscale?: boolean;
+        xgap?: number;
+        ygap?: number;
+        colorbar?: Partial<{
+            outlinecolor: string;
+            y: number;
+            yanchor: string;
+            ypad: number;
+            xpad: number;
+        }>;
     }
 
     export interface PlotlyHTMLElement extends HTMLElement {

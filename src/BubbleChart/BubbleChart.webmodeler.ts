@@ -5,62 +5,65 @@ import { LineChart } from "../LineChart/components/LineChart";
 
 import { getRandomNumbers, validateSeriesProps } from "../utils/data";
 import deepMerge from "deepmerge";
-import { Container } from "../utils/namespaces";
 import { ScatterData } from "plotly.js";
+import { Container, Data } from "../utils/namespaces";
 import LineChartContainerProps = Container.LineChartContainerProps;
 
 // tslint:disable-next-line class-name
 export class preview extends Component<LineChartContainerProps, {}> {
     render() {
         return createElement("div", {},
-            createElement(Alert, { className: "widget-charts-area-alert" },
+            createElement(Alert, { className: "widget-charts-bubble-alert" },
                 validateSeriesProps(this.props.series, this.props.friendlyId, this.props.layoutOptions)
             ),
             createElement(LineChart, {
                 ...this.props as LineChartContainerProps,
-                fill: true,
-                scatterData: this.getData(this.props)
+                scatterData: preview.getData(this.props)
             })
         );
     }
 
-    private getData(props: LineChartContainerProps): ScatterData[] {
+    static getData(props: LineChartContainerProps): ScatterData[] {
+        const sampleData = preview.getSampleTraces();
         if (props.series.length) {
             return props.series.map(series => {
-                const seriesOptions = series.seriesOptions.trim() ? JSON.parse(series.seriesOptions) : {};
-                const sampleData = preview.getSampleTraces();
+                const seriesOptions = props.devMode !== "basic" && series.seriesOptions.trim()
+                    ? JSON.parse(series.seriesOptions)
+                    : {};
 
-                return deepMerge.all([ seriesOptions, {
+                return deepMerge.all([ {
                     connectgaps: true,
+                    hoverinfo: "text",
                     hoveron: "points",
-                    line: {
-                        color: series.lineColor,
-                        shape: series.lineStyle
+                    markers: {
+                        color: series.color
                     },
-                    mode: series.mode ? series.mode.replace("X", "+") as Container.LineMode : "lines",
+                    mode: "markers",
                     name: series.name,
                     type: "scatter",
-                    fill: "tonexty",
-                    x: sampleData.x || [],
-                    y: sampleData.y || []
-                } ]);
+                    ...sampleData
+
+                }, seriesOptions ]);
             });
         }
 
         return [ {
             connectgaps: true,
+            hoverinfo: "text",
             hoveron: "points",
             name: "Sample",
             type: "scatter",
-            fill: "tonexty",
-            ...preview.getSampleTraces()
+            mode: "markers",
+            text: sampleData.marker ? sampleData.marker.size : "",
+            ...sampleData
         } as ScatterData ];
     }
 
-    private static getSampleTraces(): { x: (string | number)[], y: (string | number)[] } {
+    private static getSampleTraces(): Data.ScatterTrace {
         return {
             x: [ "Sample 1", "Sample 2", "Sample 3", "Sample 4" ],
-            y: getRandomNumbers(4, 100)
+            y: getRandomNumbers(4, 100),
+            marker: { size: getRandomNumbers(4, 100, 20) }
         };
     }
 }
@@ -84,8 +87,6 @@ export function getVisibleProperties(valueMap: LineChartContainerProps, visibili
                 visibilityMap.series[index].dataSourceMicroflow = false;
             } else if (series.dataSourceType === "microflow") {
                 visibilityMap.series[index].entityConstraint = false;
-                visibilityMap.series[index].xValueSortAttribute = false;
-                visibilityMap.series[index].sortOrder = false;
             }
             visibilityMap.series[index].seriesOptions = false;
             if (series.onClickEvent === "doNothing") {
@@ -97,8 +98,8 @@ export function getVisibleProperties(valueMap: LineChartContainerProps, visibili
             }
         });
     }
-    visibilityMap.layoutOptions = false;
     visibilityMap.devMode = false;
+    visibilityMap.layoutOptions = false;
 
     return visibilityMap;
 }

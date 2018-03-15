@@ -36,3 +36,4 @@ deploy:
   on:
     repo: $TRAVIS_REPO_SLUG
     tags: true
+    
