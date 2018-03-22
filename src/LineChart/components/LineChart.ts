@@ -164,7 +164,7 @@ export class LineChart extends Component<LineChartProps, LineChartState> {
     }
 
     private onHover = ({ event, points }: ScatterHoverData<mendix.lib.MxObject>) => {
-        const { customdata, data, y, text } = points[0];
+        const { customdata, data, r, y, text } = points[0];
         if (event && this.tooltipNode) {
             unmountComponentAtNode(this.tooltipNode);
             const coordinates = getTooltipCoordinates(event, this.tooltipNode);
@@ -174,7 +174,7 @@ export class LineChart extends Component<LineChartProps, LineChartState> {
                     this.tooltipNode.innerHTML = "";
                     this.props.onHover(this.tooltipNode, data.series.tooltipForm, customdata);
                 } else {
-                    render(createElement(HoverTooltip, { text: text || y }), this.tooltipNode);
+                    render(createElement(HoverTooltip, { text: text || y || r }), this.tooltipNode);
                 }
             }
         }
