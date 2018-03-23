@@ -232,7 +232,7 @@ export class LineChart extends Component<LineChartProps, LineChartState> {
                 l: 60,
                 r: 60,
                 b: 60,
-                t: 10,
+                t: props.type === "polar" ? 60 : 10,
                 pad: 10
             }
         };
