@@ -160,6 +160,7 @@ export namespace Data {
         sortOrder: SortOrder;
         yValueAttribute: string;
         markerSizeAttribute?: string;
+        markerSizeReference?: string;
     }
 
     export type SortOrder = "asc" | "desc";
