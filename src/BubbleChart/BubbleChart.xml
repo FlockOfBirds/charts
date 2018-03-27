@@ -76,6 +76,11 @@
                         <attributeType name="Integer"/>
                     </attributeTypes>
                 </property>
+                <property key="markerSizeReference" type="translatableString" required="false">
+                    <caption>Marker size reference</caption>
+                    <category>Data points</category>
+                    <description/>
+                </property>
                 <property key="xValueSortAttribute" type="attribute" entityProperty="dataEntity" required="false" isPath="optional" pathType="reference">
                     <caption>X-axis sort attribute</caption>
                     <category>Data points</category>

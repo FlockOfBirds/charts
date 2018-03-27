@@ -256,7 +256,11 @@ export class LineChart extends Component<LineChartProps, LineChartState> {
             mode: series.mode ? series.mode.replace("X", "+") as LineMode : "lines",
             name: series.name,
             type: "scatter",
-            fill: props.fill || series.fill ? "tonexty" : "none"
+            fill: props.fill || series.fill ? "tonexty" : "none",
+            marker: {
+                sizemode: "area",
+                sizeref: series.markerSizeReference ? parseFloat(series.markerSizeReference as string) : 0.2
+            }
         };
     }
 
