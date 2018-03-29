@@ -127,7 +127,9 @@ export default class LineChartContainer extends Component<LineChartContainerProp
                     series, // shall be accessible via the data property of a hover/click point
                     fillcolor: series.fillColor || fillColours[index],
                     marker: color ? { color: series.color || color } : {},
-                    ... traces,
+                    ...this.props.type === "polar"
+                        ? { r: traces.y, theta: traces.x }
+                        : traces,
                     text: traces.marker ? traces.marker.size : "" // show the size value on hover
                 },
                 rawOptions
