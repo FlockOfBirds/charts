@@ -34,11 +34,25 @@ export namespace Container {
         showRangeSlider: boolean;
         xAxisType?: AxisType;
         rangeMode?: RangeMode;
+        polar?: PolarOptions;
     }
 
     export type RangeMode = "normal" | "tozero" | "nonnegative";
 
     export type LineMode = "lines" | "markers" | "lines+markers" | "none";
+
+    export interface PolarOptions {
+        radialaxis?: Partial<{
+            rangemode: RangeMode;
+            gridcolor: string;
+            showgrid: boolean;
+            tickcolor: string;
+        }>;
+        angularaxis?: Partial<{
+            linecolor: string;
+            tickcolor: string;
+        }>;
+    }
 
     export interface BarChartContainerProps extends WrapperProps, Style.Dimensions, Style.Appearance, BarLayoutProps {
         series: Data.SeriesProps[];
@@ -54,6 +68,7 @@ export namespace Container {
 
     export interface LineChartContainerProps extends WrapperProps, Style.Dimensions, Style.Appearance, LineLayoutProps {
         series: Data.LineSeriesProps[];
+        type: "line" | "polar";
     }
 
     export interface LineChartContainerState {
@@ -118,6 +133,10 @@ export namespace Container {
         scatterData?: ScatterData[];
         seriesOptions: string[];
         loading?: boolean;
+    }
+
+    export interface PolarChartContainerProps extends LineChartContainerProps {
+        showGrid: boolean;
     }
     export interface ScaleColors {
         valuePercentage: number;
@@ -197,8 +216,10 @@ export namespace Data {
 
     export interface ScatterTrace {
         x: Datum[];
-        y: number[] | Datum[];
+        y: Datum[];
         marker?: Partial<ScatterMarker>;
+        r?: Datum[];
+        theta?: Datum[];
     }
 
     export interface ReferencesSpec {

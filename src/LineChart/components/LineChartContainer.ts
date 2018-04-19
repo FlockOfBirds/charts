@@ -49,8 +49,10 @@ export default class LineChartContainer extends Component<LineChartContainerProp
         if (!this.state.loading) {
             this.setState({ loading: true });
         }
-        this.fetchData(newProps.mxObject);
-        this.setRefreshInterval(newProps.refreshInterval, newProps.mxObject);
+        if (!this.state.alertMessage) {
+            this.fetchData(newProps.mxObject);
+            this.setRefreshInterval(newProps.refreshInterval, newProps.mxObject);
+        }
     }
 
     componentWillUnmount() {
@@ -118,20 +120,26 @@ export default class LineChartContainer extends Component<LineChartContainerProp
     private createScatterData({ data, series }: Data.SeriesData<Data.LineSeriesProps>, index: number, devMode = false): ScatterData {
         const rawOptions = devMode && series.seriesOptions ? JSON.parse(series.seriesOptions) : {};
         const color: string | undefined = series.lineColor || defaultColours(series.mode === ("bubble" as any) ? 0.7 : 1)[index];
-        const traces = getSeriesTraces({ data, series });
+        let traces = getSeriesTraces({ data, series });
+        if (this.props.type === "polar") {
+            traces = {
+                r: (traces.y as number[]).concat(traces.y[0] as number),
+                theta: traces.x.concat(traces.x[0])
+            } as Data.ScatterTrace;
+        }
 
         return {
             ...deepMerge.all<ScatterData>([
                 LineChart.getDefaultSeriesOptions(series, this.props),
                 {
                     series, // shall be accessible via the data property of a hover/click point
-                    fillcolor: series.fillColor || fillColours[index],
+                    fillcolor: series.fillColor || (!series.lineColor ? fillColours[index] : undefined),
                     line: color ? { color } : {},
                     marker: color ? { color } : {},
                     text: traces.marker ? traces.marker.size : "", // show the size value on hover,
-                    mode: series.mode === ("bubble" as any) ? "markers" : series.mode,
-                    ... traces
+                    mode: series.mode === ("bubble" as any) ? "markers" : series.mode
                 },
+                traces,
                 rawOptions
             ]),
             customdata: data // each array element shall be returned as the custom data of a corresponding point

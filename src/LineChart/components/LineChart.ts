@@ -40,6 +40,9 @@ interface LineChartState {
 }
 
 export class LineChart extends Component<LineChartProps, LineChartState> {
+    static defaultProps: Partial<LineChartProps> = {
+        type: "line"
+    };
     state: LineChartState = {
         layoutOptions: this.props.layoutOptions,
         series: this.props.series,
@@ -90,7 +93,7 @@ export class LineChart extends Component<LineChartProps, LineChartState> {
     private renderLineChart(): ReactElement<any> {
         return createElement(PlotlyChart,
             {
-                type: "line",
+                type: this.props.type,
                 className: this.props.class,
                 style: { ...getDimensions(this.props), ...parseStyle(this.props.style) },
                 layout: this.getLayoutOptions(this.props),
@@ -134,8 +137,8 @@ export class LineChart extends Component<LineChartProps, LineChartState> {
     }
 
     private getData(props: LineChartProps): ScatterData[] {
-        if (props.scatterData) {
-            const lineData: ScatterData[] = props.scatterData.map((data, index) => {
+        if (this.state.scatterData) {
+            const lineData: ScatterData[] = this.state.scatterData.map((data, index) => {
                 const parsedOptions = props.devMode !== "basic" && this.state.seriesOptions
                     ? JSON.parse(this.state.seriesOptions[index])
                     : {};
@@ -143,13 +146,13 @@ export class LineChart extends Component<LineChartProps, LineChartState> {
                 // deepmerge doesn't go into the prototype chain, so it can't be used for copying mxObjects
                 return {
                     ...deepMerge.all<ScatterData>([ data, parsedOptions ]),
-                    visible: this.state.hiddenTraces.indexOf(index) === -1 ? true : "legendonly",
+                    visible: data.visible || true,
                     customdata: data.customdata
                 };
             });
 
             return props.area === "stacked"
-                ? LineChart.getStackedArea(lineData, this.state.hiddenTraces)
+                ? LineChart.getStackedArea(lineData)
                 : lineData;
         }
 
@@ -163,7 +166,7 @@ export class LineChart extends Component<LineChartProps, LineChartState> {
     }
 
     private onHover = ({ event, points }: ScatterHoverData<mendix.lib.MxObject>) => {
-        const { customdata, data, y, text } = points[0];
+        const { customdata, data, r, y, text } = points[0];
         if (event && this.tooltipNode) {
             unmountComponentAtNode(this.tooltipNode);
             const coordinates = getTooltipCoordinates(event, this.tooltipNode);
@@ -173,7 +176,7 @@ export class LineChart extends Component<LineChartProps, LineChartState> {
                     this.tooltipNode.innerHTML = "";
                     this.props.onHover(this.tooltipNode, data.series.tooltipForm, customdata);
                 } else if (points[0].data.hoverinfo === "none" as any) {
-                    render(createElement(HoverTooltip, { text: text || y }), this.tooltipNode);
+                    render(createElement(HoverTooltip, { text: text || y || r }), this.tooltipNode);
                 } else {
                     this.tooltipNode.style.opacity = "0";
                 }
@@ -181,22 +184,30 @@ export class LineChart extends Component<LineChartProps, LineChartState> {
         }
     }
 
-    private onRestyle = (data: any) => {
-        if (data[0].visible[0] === "legendonly") {
-            this.setState({ hiddenTraces: this.state.hiddenTraces.concat([ data[1][0] ]) });
-        } else if (data[0].visible[0] === true) {
-            const hiddenTraces = [ ...this.state.hiddenTraces ];
-            hiddenTraces.splice(hiddenTraces.indexOf(data[1][0]), 1);
-            this.setState({ hiddenTraces });
+    private onRestyle = (data: any[]) => {
+        if (this.state.scatterData) {
+            (this.state.scatterData as any)[data[1][0]].visible = data[0].visible[0];
+            this.setState({ scatterData: this.state.scatterData });
         }
     }
 
     private onRuntimeUpdate = (layoutOptions: string, seriesOptions: string[]) => {
-        this.setState({ layoutOptions, seriesOptions });
+        const updatedScatterData = seriesOptions.map((option, index) => {
+            const rawOptions = option ? JSON.parse(option) : {};
+            if (rawOptions.visible) {
+                const { scatterData } = this.state;
+                (scatterData as any)[index].visible = rawOptions.visible;
+
+                return (scatterData as any)[index];
+            }
+
+            return (this.state.scatterData as any)[index];
+        });
+        this.setState({ layoutOptions, seriesOptions, scatterData: updatedScatterData });
     }
 
     public static defaultLayoutConfigs(props: LineChartProps): Partial<Layout> {
-        return {
+        const sharedConfigs: Partial<Layout> = {
             font: {
                 family: "Open Sans",
                 size: 14,
@@ -205,27 +216,6 @@ export class LineChart extends Component<LineChartProps, LineChartState> {
             autosize: true,
             hovermode: "closest",
             showlegend: props.showLegend,
-            xaxis: {
-                fixedrange: props.xAxisType !== "date",
-                gridcolor: "#d7d7d7",
-                rangeslider: {
-                    visible: props.showRangeSlider || false
-                },
-                showgrid: props.grid === "vertical" || props.grid === "both",
-                title: props.xAxisLabel,
-                type: props.xAxisType,
-                zeroline: true,
-                zerolinecolor: "#d7d7d7"
-            },
-            yaxis: {
-                rangemode: props.rangeMode || "tozero",
-                zeroline: true,
-                zerolinecolor: "#d7d7d7",
-                gridcolor: "#d7d7d7",
-                title: props.yAxisLabel,
-                showgrid: props.grid === "horizontal" || props.grid === "both",
-                fixedrange: true
-            },
             hoverlabel: {
                 bgcolor: "#888",
                 bordercolor: "#888",
@@ -237,10 +227,42 @@ export class LineChart extends Component<LineChartProps, LineChartState> {
                 l: 60,
                 r: 60,
                 b: 60,
-                t: 10,
+                t: props.type === "polar" ? 60 : 10,
                 pad: 10
             }
         };
+
+        if (props.type === "line") {
+            const lineConfigs: Partial<Layout> = {
+                xaxis: {
+                    fixedrange: props.xAxisType !== "date",
+                    gridcolor: "#d7d7d7",
+                    rangeslider: {
+                        visible: props.showRangeSlider || false
+                    },
+                    showgrid: props.grid === "vertical" || props.grid === "both",
+                    title: props.xAxisLabel,
+                    type: props.xAxisType,
+                    zeroline: true,
+                    zerolinecolor: "#d7d7d7"
+                },
+                yaxis: {
+                    rangemode: props.rangeMode || "tozero",
+                    zeroline: true,
+                    zerolinecolor: "#d7d7d7",
+                    gridcolor: "#d7d7d7",
+                    title: props.yAxisLabel,
+                    showgrid: props.grid === "horizontal" || props.grid === "both",
+                    fixedrange: true
+                }
+            };
+
+            return { ...sharedConfigs, ...lineConfigs };
+        } else if (props.type === "polar" && props.polar) {
+            return { ...sharedConfigs, polar: props.polar } as Partial<Layout>;
+        }
+
+        return sharedConfigs;
     }
 
     public static getConfigOptions(props: LineChartProps): Partial<Config> {
@@ -258,14 +280,16 @@ export class LineChart extends Component<LineChartProps, LineChartState> {
             },
             mode: series.mode ? series.mode.replace("X", "+").replace("bubble", "markers") as LineMode : "lines",
             name: series.name,
-            type: "scatter",
-            fill: props.fill || series.fill ? "tonexty" : "none",
+            type: props.type === "line" ? "scatter" : "scatterpolar" as any,
+            fill: props.fill || series.fill
+                ? props.type === "polar" ? "toself" : "tonexty"
+                : "none",
             marker: series.mode === ("bubble" as any) ? { line: { width: 0 } } : {}
         };
     }
 
-    public static getStackedArea(traces: ScatterData[], hiddenTraces: number[]) {
-        const visibleTraces = traces.filter((data, index) => hiddenTraces.indexOf(index) === -1);
+    public static getStackedArea(traces: ScatterData[]) {
+        const visibleTraces = traces.filter((data, index) => data.visible === true);
         for (let i = 1; i < visibleTraces.length; i++) {
             for (let j = 0; j < (Math.min(visibleTraces[i].y.length, visibleTraces[i - 1].y.length)); j++) {
                 (visibleTraces[i].y[j] as any) += visibleTraces[i - 1].y[j];

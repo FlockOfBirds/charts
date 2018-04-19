@@ -27,6 +27,7 @@ declare module "plotly.js" {
             x: string | number;
             y: string | number;
             z?: number;
+            r?: string | number;
             pointNumber: number;
             curveNumber: number;
             data: ScatterData;
@@ -69,6 +70,7 @@ declare module "plotly.js" {
         series: any; // custom property, not part of the official plotly.js api
         orientation?: "h" | "v";
         customdata: any[];
+        visible?: boolean | "legendonly"; // default = true
     }
 
     export interface PieData {
