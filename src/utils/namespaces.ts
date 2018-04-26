@@ -1,5 +1,6 @@
 import { AxisType, BarMode, Datum, ScatterData, ScatterMarker } from "plotly.js";
 import { ReactChild } from "react";
+import { ChartConfigs } from "./configs";
 
 export namespace Container {
     import SeriesProps = Data.SeriesProps;
@@ -20,6 +21,7 @@ export namespace Container {
         xAxisLabel: string;
         yAxisLabel: string;
         layoutOptions: string;
+        configurationOptions: string;
         devMode: "basic" | "advanced" | "developer";
     }
 
@@ -34,11 +36,25 @@ export namespace Container {
         showRangeSlider: boolean;
         xAxisType?: AxisType;
         rangeMode?: RangeMode;
+        polar?: PolarOptions;
     }
 
     export type RangeMode = "normal" | "tozero" | "nonnegative";
 
     export type LineMode = "lines" | "markers" | "lines+markers" | "none";
+
+    export interface PolarOptions {
+        radialaxis?: Partial<{
+            rangemode: RangeMode;
+            gridcolor: string;
+            showgrid: boolean;
+            tickcolor: string;
+        }>;
+        angularaxis?: Partial<{
+            linecolor: string;
+            tickcolor: string;
+        }>;
+    }
 
     export interface BarChartContainerProps extends WrapperProps, Style.Dimensions, Style.Appearance, BarLayoutProps {
         series: Data.SeriesProps[];
@@ -50,10 +66,12 @@ export namespace Container {
         scatterData?: ScatterData[];
         seriesOptions: string[];
         loading?: boolean;
+        themeConfigs: ChartConfigs;
     }
 
     export interface LineChartContainerProps extends WrapperProps, Style.Dimensions, Style.Appearance, LineLayoutProps {
         series: Data.LineSeriesProps[];
+        type: "line" | "bubble" | "polar" | "area" | "timeseries";
     }
 
     export interface LineChartContainerState {
@@ -62,6 +80,7 @@ export namespace Container {
         scatterData?: ScatterData[];
         seriesOptions: string[];
         loading?: boolean;
+        themeConfigs: ChartConfigs;
     }
 
     export type PieChartType = "pie" | "donut";
@@ -75,6 +94,7 @@ export namespace Container {
         chartType: PieChartType;
         showLegend: boolean;
         layoutOptions: string;
+        configurationOptions: string;
         dataOptions: string;
         devMode: "basic" | "advanced" | "developer";
     }
@@ -95,29 +115,13 @@ export namespace Container {
         xAxisLabel: string;
         yAxisLabel: string;
         layoutOptions: string;
+        configurationOptions: string;
         dataOptions: string;
         devMode: "basic" | "advanced" | "developer";
     }
 
-    export interface BubbleChartContainerProps extends Data.DataSourceProps, LayoutProps, Style.Dimensions, Data.EventProps, WrapperProps {
-        series: Data.SeriesProps[];
-        showLegend: boolean;
-        serieColor: string;
-        xAxisLabel: string;
-        yAxisLabel: string;
-        layoutOptions: string;
-        dataOptions: string;
-        devMode: "basic" | "advanced" | "developer";
-        refreshInterval: number;
-        showRangeSlider: boolean;
-    }
-
-    export interface BubbleChartContainerState {
-        alertMessage?: ReactChild;
-        data?: Data.SeriesData<Data.SeriesProps>[];
-        scatterData?: ScatterData[];
-        seriesOptions: string[];
-        loading?: boolean;
+    export interface PolarChartContainerProps extends LineChartContainerProps {
+        showGrid: boolean;
     }
     export interface ScaleColors {
         valuePercentage: number;
@@ -129,6 +133,7 @@ export namespace Container {
         sampleData: string;
         layoutStatic: string;
         layoutAttribute: string;
+        configurationOptions: string;
         sampleLayout: string;
         eventEntity: string;
         eventDataAttribute: string;
@@ -164,6 +169,8 @@ export namespace Data {
         sortOrder: SortOrder;
         yValueAttribute: string;
         markerSizeAttribute?: string;
+        markerSizeReference: number;
+        autoBubbleSize: boolean;
     }
 
     export type SortOrder = "asc" | "desc";
@@ -197,17 +204,19 @@ export namespace Data {
 
     export interface ScatterTrace {
         x: Datum[];
-        y: number[] | Datum[];
+        y: Datum[];
         marker?: Partial<ScatterMarker>;
+        r?: Datum[];
+        theta?: Datum[];
     }
 
     export interface ReferencesSpec {
-            attributes?: string[];
-            amount?: number;
-            sort?: [ string, "desc" | "asc" ][];
-            references?: {
-                [index: string]: ReferencesSpec;
-            };
+        attributes?: string[];
+        amount?: number;
+        sort?: [ string, "desc" | "asc" ][];
+        references?: {
+            [ index: string ]: ReferencesSpec;
+        };
     }
 }
 

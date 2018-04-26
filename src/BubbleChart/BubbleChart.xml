@@ -67,7 +67,7 @@
                     </attributeTypes>
                 </property>
                 <property key="markerSizeAttribute" type="attribute" entityProperty="dataEntity">
-                    <caption>Bubble size data attribute</caption>
+                    <caption>Bubble size attribute</caption>
                     <category>Data points</category>
                     <description>The value determines the bubble size</description>
                     <attributeTypes>
@@ -75,6 +75,16 @@
                         <attributeType name="Long"/>
                         <attributeType name="Integer"/>
                     </attributeTypes>
+                </property>
+                <property key="autoBubbleSize" type="boolean" defaultValue="true">
+                    <caption>Auto bubble size</caption>
+                    <category>Data points</category>
+                    <description/>
+                </property>
+                <property key="markerSizeReference" type="integer" defaultValue="10">
+                    <caption>Bubble size percentage</caption>
+                    <category>Data points</category>
+                    <description>When 'Auto bubble size' is true, the largest bubble will have the specified percentage of the chart. When 'Auto bubble size' is false, the bubble size is the pixel value of the 'Bubble size attribute' multiplied by the specified percentage.</description>
                 </property>
                 <property key="xValueSortAttribute" type="attribute" entityProperty="dataEntity" required="false" isPath="optional" pathType="reference">
                     <caption>X-axis sort attribute</caption>
@@ -220,6 +230,11 @@
             <caption>Layout options</caption>
             <category>Advanced</category>
             <description>The JSON containing the Plotly layout options</description>
+        </property>
+        <property key="configurationOptions" type="string" required="false" multiline="true">
+            <caption>Configuration options</caption>
+            <category>Advanced</category>
+            <description>The JSON containing the Plotly configuration options</description>
         </property>
     </properties>
 </widget>

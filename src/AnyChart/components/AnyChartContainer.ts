@@ -1,4 +1,4 @@
-let __webpack_public_path__;
+let __webpack_public_path__: string;
 import { Component, ReactChild, createElement } from "react";
 
 import { AnyChart, AnyChartProps } from "./AnyChart";
@@ -26,6 +26,7 @@ export default class AnyChartContainer extends Component<AnyChartContainerProps,
             layoutStatic: this.props.layoutStatic,
             attributeData: this.state.attributeData,
             attributeLayout: this.state.attributeLayout,
+            configurationOptions: this.props.configurationOptions,
             onClick: this.onClick,
             onHover: this.props.tooltipForm ? this.onHover : undefined,
             width: this.props.width,
@@ -36,14 +37,16 @@ export default class AnyChartContainer extends Component<AnyChartContainerProps,
         };
 
         return createElement("div", {},
-                createElement(this.props.devMode === "developer" ? AnyPlayground : AnyChart, anyProps)
+            createElement(this.props.devMode === "developer" ? AnyPlayground : AnyChart, anyProps)
         );
     }
 
     componentWillReceiveProps(newProps: AnyChartContainerProps) {
         this.resetSubscriptions(newProps.mxObject);
-        this.setState({ loading: true });
-        this.fetchData(newProps.mxObject);
+        if (!this.state.alertMessage) {
+            this.setState({ loading: true });
+            this.fetchData(newProps.mxObject);
+        }
     }
 
     private fetchData(mxObject?: mendix.lib.MxObject) {
@@ -92,7 +95,7 @@ export default class AnyChartContainer extends Component<AnyChartContainerProps,
         }
     }
 
-    private onClick(data: any) {
+    private onClick = (data: any) => {
         const { eventEntity, eventDataAttribute, onClickMicroflow } = this.props;
         if (eventEntity && eventDataAttribute && onClickMicroflow) {
             mx.data.create({
@@ -109,7 +112,7 @@ export default class AnyChartContainer extends Component<AnyChartContainerProps,
         }
     }
 
-    private onHover(data: any, tooltipNode: HTMLDivElement) {
+    private onHover = (data: any, tooltipNode: HTMLDivElement) => {
         const { eventEntity, eventDataAttribute, tooltipForm, tooltipMicroflow, tooltipEntity } = this.props;
         if (eventEntity && eventDataAttribute && tooltipForm && tooltipMicroflow && tooltipEntity) {
             mx.data.create({
@@ -173,3 +176,5 @@ export default class AnyChartContainer extends Component<AnyChartContainerProps,
         return "";
     }
 }
+
+export { __webpack_public_path__ };

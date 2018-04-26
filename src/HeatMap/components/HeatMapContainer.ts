@@ -1,4 +1,4 @@
-let __webpack_public_path__;
+let __webpack_public_path__: string;
 import { Component, ReactChild, createElement } from "react";
 
 import { fetchByMicroflow, fetchByXPath, handleOnClick, validateSeriesProps } from "../../utils/data";
@@ -7,6 +7,7 @@ import { Container } from "../../utils/namespaces";
 import { HeatMapData } from "plotly.js";
 import { getDimensions, parseStyle } from "../../utils/style";
 import HeatMapContainerProps = Container.HeatMapContainerProps;
+import { ChartConfigs, fetchThemeConfigs } from "../../utils/configs";
 
 __webpack_public_path__ = window.mx ? `${window.mx.baseUrl}../widgets/` : "../widgets";
 
@@ -14,26 +15,31 @@ interface HeatMapContainerState {
     alertMessage?: ReactChild;
     data?: HeatMapData;
     loading: boolean;
+    themeConfigs: ChartConfigs;
 }
 
 export default class HeatMapContainer extends Component<HeatMapContainerProps, HeatMapContainerState> {
+    state: HeatMapContainerState = {
+        alertMessage: validateSeriesProps(
+            [ { ...this.props, seriesOptions: this.props.dataOptions } ], this.props.friendlyId, this.props.layoutOptions
+        ),
+        loading: true,
+        themeConfigs: { layout: {}, configuration: {}, data: {} }
+    };
     private subscriptionHandle?: number;
     private rawData: mendix.lib.MxObject[] = [];
     private intervalID?: number;
-
-    constructor(props: HeatMapContainerProps) {
-        super(props);
-
-        this.state = {
-            alertMessage: validateSeriesProps([ { ...props, seriesOptions: props.dataOptions } ], props.friendlyId, props.layoutOptions),
-            loading: true
-        };
-    }
 
     render() {
         return createElement("div", {
             style: this.state.loading ? { ...getDimensions(this.props), ...parseStyle(this.props.style) } : undefined
         }, this.getContent());
+    }
+
+    componentDidMount() {
+        if (this.props.devMode !== "basic") {
+            fetchThemeConfigs("HeatMap").then(themeConfigs => this.setState({ themeConfigs }));
+        }
     }
 
     componentWillReceiveProps(newProps: HeatMapContainerProps) {
@@ -74,6 +80,7 @@ export default class HeatMapContainer extends Component<HeatMapContainerProps, H
             alertMessage: this.state.alertMessage,
             loading: this.state.loading,
             data: this.state.data,
+            themeConfigs: this.state.themeConfigs,
             onClick: this.handleOnClick,
             onHover: this.props.tooltipForm ? this.openTooltipForm : undefined
         });
@@ -226,7 +233,11 @@ export default class HeatMapContainer extends Component<HeatMapContainerProps, H
 
     public static processColorScale(scaleColors: Container.ScaleColors[]): (string | number)[][] {
         return scaleColors.length > 1
-            ? scaleColors.map(colors => [ Math.abs(colors.valuePercentage / 100), colors.colour ])
+            ? scaleColors
+                .sort((colour1, colour2) => colour1.valuePercentage - colour2.valuePercentage)
+                .map(colors => [ Math.abs(colors.valuePercentage / 100), colors.colour ])
             : [ [ 0, "#17347B" ], [ 0.5, "#0595DB" ], [ 1, "#76CA02" ] ];
     }
 }
+
+export { __webpack_public_path__ };

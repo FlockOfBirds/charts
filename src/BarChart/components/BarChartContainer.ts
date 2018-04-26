@@ -1,7 +1,6 @@
-let __webpack_public_path__;
-import { Component, ReactElement, createElement } from "react";
+let __webpack_public_path__: string;
+import { Component, createElement } from "react";
 
-import { Alert, AlertProps } from "../../components/Alert";
 import { BarChart, BarChartProps } from "./BarChart";
 import { fetchSeriesData, getSeriesTraces, handleOnClick, validateSeriesProps } from "../../utils/data";
 import deepMerge from "deepmerge";
@@ -10,6 +9,7 @@ import { ScatterData } from "plotly.js";
 import { defaultColours, getDimensions, parseStyle } from "../../utils/style";
 import BarChartContainerProps = Container.BarChartContainerProps;
 import BarChartContainerState = Container.BarChartContainerState;
+import { fetchThemeConfigs } from "../../utils/configs";
 
 __webpack_public_path__ = window.mx ? `${window.mx.baseUrl}../widgets/` : "../widgets";
 
@@ -19,7 +19,8 @@ export default class BarChartContainer extends Component<BarChartContainerProps,
         alertMessage: validateSeriesProps(this.props.series, this.props.friendlyId, this.props.layoutOptions),
         data: [],
         seriesOptions: [],
-        loading: true
+        loading: true,
+        themeConfigs: { layout: {}, configuration: {}, data: {} }
     };
     private subscriptionHandle?: number;
     private intervalID?: number;
@@ -38,10 +39,18 @@ export default class BarChartContainer extends Component<BarChartContainerProps,
                 seriesOptions: this.state.seriesOptions,
                 loading: this.state.loading,
                 alertMessage: this.state.alertMessage,
+                themeConfigs: this.state.themeConfigs,
                 onClick: handleOnClick,
                 onHover: BarChartContainer.openTooltipForm
             })
         );
+    }
+
+    componentDidMount() {
+        if (this.props.devMode !== "basic") {
+            fetchThemeConfigs(this.props.orientation === "bar" ? "BarChart" : "ColumnChart")
+                .then(themeConfigs => this.setState({ themeConfigs }));
+        }
     }
 
     componentWillReceiveProps(newProps: BarChartContainerProps) {
@@ -49,8 +58,10 @@ export default class BarChartContainer extends Component<BarChartContainerProps,
         if (!this.state.loading) {
             this.setState({ loading: true });
         }
-        this.fetchData(newProps.mxObject);
-        this.setRefreshInterval(newProps.refreshInterval, newProps.mxObject);
+        if (!this.state.alertMessage) {
+            this.fetchData(newProps.mxObject);
+            this.setRefreshInterval(newProps.refreshInterval, newProps.mxObject);
+        }
     }
 
     componentWillUnmount() {
@@ -120,7 +131,7 @@ export default class BarChartContainer extends Component<BarChartContainerProps,
 
         return {
             ...deepMerge.all<ScatterData>([
-                BarChart.getDefaultSeriesOptions(series, this.props),
+                BarChart.getDefaultSeriesOptions(series, this.props as BarChartProps),
                 {
                     x: bar ? traces.y : traces.x,
                     y: bar ? traces.x : traces.y,
@@ -136,6 +147,11 @@ export default class BarChartContainer extends Component<BarChartContainerProps,
     public static openTooltipForm(domNode: HTMLDivElement, tooltipForm: string, dataObject: mendix.lib.MxObject) {
         const context = new mendix.lib.MxContext();
         context.setContext(dataObject.getEntity(), dataObject.getGuid());
+        while (domNode.firstChild) {
+            domNode.removeChild(domNode.firstChild);
+        }
         window.mx.ui.openForm(tooltipForm, { domNode, context });
     }
 }
+
+export { __webpack_public_path__ };

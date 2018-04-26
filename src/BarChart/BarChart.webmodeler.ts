@@ -21,7 +21,8 @@ export class preview extends Component<BarChartContainerProps, {}> {
                 ...this.props as BarChartContainerProps,
                 devMode: this.props.devMode === "developer" ? "advanced" : this.props.devMode,
                 orientation: "bar",
-                scatterData: preview.getData(this.props)
+                scatterData: preview.getData(this.props),
+                themeConfigs: { layout: {}, configuration: {}, data: {} }
             })
         );
     }
@@ -42,7 +43,7 @@ export class preview extends Component<BarChartContainerProps, {}> {
                     x: sampleData.x || [],
                     y: sampleData.y || [],
                     series: {},
-                    marker: {  color: series.color || defaultColours()[index] }
+                    marker: {  color: series.barColor || defaultColours()[index] }
                 }, seriesOptions ]);
             });
         }

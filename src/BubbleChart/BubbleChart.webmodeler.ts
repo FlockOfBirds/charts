@@ -19,8 +19,10 @@ export class preview extends Component<LineChartContainerProps, {}> {
             ),
             createElement(LineChart, {
                 ...this.props as LineChartContainerProps,
+                type: "bubble",
                 devMode: this.props.devMode === "developer" ? "advanced" : this.props.devMode,
-                scatterData: preview.getData(this.props)
+                scatterData: preview.getData(this.props),
+                themeConfigs: { layout: {}, configuration: {}, data: {} }
             })
         );
     }
