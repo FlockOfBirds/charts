@@ -22,7 +22,7 @@ exports.config = {
     baseUrl: debug ? "http://localhost:8080/" : "https://charts102.mxapps.io/",
     waitforTimeout: 180000,
     connectionRetryTimeout: 200000,
-    connectionRetryCount: 2,
+    connectionRetryCount: 3,
     killInstances: true,
     services:  multiclient ? [ "iedriver", "selenium-standalone" ] : [ "selenium-standalone" ],
     seleniumArgs: multiclient ? {
