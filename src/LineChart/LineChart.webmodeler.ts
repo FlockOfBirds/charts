@@ -1,14 +1,17 @@
 import { Component, createElement } from "react";
 
-import { LineChart } from "./components/LineChart";
+import LineChart from "./components/LineChart";
 
 import { getRandomNumbers, validateSeriesProps } from "../utils/data";
 import deepMerge from "deepmerge";
 import { ScatterData } from "plotly.js";
 import { Container } from "../utils/namespaces";
-import LineChartContainerProps = Container.LineChartContainerProps;
 import LineMode = Container.LineMode;
 import { defaultColours } from "../utils/style";
+import { LineChartDataHandlerProps } from "./components/LineChartDataHandler";
+import { Provider } from "react-redux";
+import { store } from "../store";
+import LineChartContainerProps = Container.LineChartContainerProps;
 
 // tslint:disable-next-line class-name
 export class preview extends Component<LineChartContainerProps, {}> {
@@ -20,13 +23,16 @@ export class preview extends Component<LineChartContainerProps, {}> {
             this.props.configurationOptions
         );
 
-        return createElement(LineChart, {
-            ...this.props as LineChartContainerProps,
-            alertMessage,
-            devMode: this.props.devMode === "developer" ? "advanced" : this.props.devMode,
-            scatterData: preview.getData(this.props),
-            themeConfigs: { layout: {}, configuration: {}, data: {} }
-        });
+        return createElement(Provider, { store },
+            createElement(LineChart, {
+                ...this.props as LineChartDataHandlerProps,
+                alertMessage,
+                devMode: this.props.devMode === "developer" ? "advanced" : this.props.devMode,
+                fetchingData: false,
+                scatterData: preview.getData(this.props),
+                themeConfigs: { layout: {}, configuration: {}, data: {} }
+            })
+        );
     }
 
     static getData(props: LineChartContainerProps): ScatterData[] {

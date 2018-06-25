@@ -1,6 +1,7 @@
 import { Component, createElement } from "react";
+import { Provider } from "react-redux";
 
-import { BarChart } from "../BarChart/components/BarChart";
+import BarChart from "../BarChart/components/BarChart";
 
 import { getRandomNumbers, validateSeriesProps } from "../utils/data";
 import deepMerge from "deepmerge";
@@ -8,6 +9,8 @@ import { ScatterData } from "plotly.js";
 import { Container } from "../utils/namespaces";
 import BarChartContainerProps = Container.BarChartContainerProps;
 import { defaultColours } from "../utils/style";
+import { BarChartDataHandlerProps } from "../BarChart/components/BarChartDataHandler";
+import { store } from "../store";
 
 // tslint:disable-next-line class-name
 export class preview extends Component<BarChartContainerProps, {}> {
@@ -19,13 +22,16 @@ export class preview extends Component<BarChartContainerProps, {}> {
             this.props.configurationOptions
         );
 
-        return createElement(BarChart, {
-            ...this.props as BarChartContainerProps,
-            alertMessage,
-            devMode: this.props.devMode === "developer" ? "advanced" : this.props.devMode,
-            scatterData: this.getData(this.props),
-            themeConfigs: { layout: {}, configuration: {}, data: {} }
-        });
+        return createElement(Provider, { store },
+            createElement(BarChart, {
+                ...this.props as BarChartDataHandlerProps,
+                alertMessage,
+                devMode: this.props.devMode === "developer" ? "advanced" : this.props.devMode,
+                fetchingData: false,
+                scatterData: this.getData(this.props),
+                themeConfigs: { layout: {}, configuration: {}, data: {} }
+            })
+        );
     }
 
     private getData(props: BarChartContainerProps): ScatterData[] {

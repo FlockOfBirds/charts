@@ -1,12 +1,16 @@
 import { Component, createElement } from "react";
+import { Provider } from "react-redux";
 
-import { HeatMap, HeatMapProps } from "./components/HeatMap";
-import HeatMapContainer from "./components/HeatMapContainer";
-import { HeatMapData } from "plotly.js";
+import HeatMap, { HeatMapProps } from "./components/HeatMap";
+import { HeatMapDataHandlerProps } from "./components/HeatMapDataHandler";
 
 import deepMerge from "deepmerge";
+import { getDefaultDataOptions } from "./utils/configs";
 import { validateSeriesProps } from "../utils/data";
+import { processColorScale } from "./utils/data";
 import { Container } from "../utils/namespaces";
+import { HeatMapData } from "plotly.js";
+import { store } from "../store";
 import HeatMapContainerProps = Container.HeatMapContainerProps;
 
 // tslint:disable-next-line class-name
@@ -19,15 +23,18 @@ export class preview extends Component<HeatMapContainerProps, {}> {
             this.props.configurationOptions
         );
 
-        return createElement(HeatMap, {
-            ...this.props as HeatMapContainerProps,
-            alertMessage,
-            themeConfigs: { layout: {}, configuration: {}, data: {} },
-            devMode: this.props.devMode === "developer" ? "advanced" : this.props.devMode,
-            defaultData: deepMerge.all(
-                [ HeatMap.getDefaultDataOptions(this.props as HeatMapProps), preview.getData(this.props) ]
-            )
-        });
+        return createElement(Provider, { store },
+            createElement(HeatMap, {
+                ...this.props as HeatMapDataHandlerProps,
+                alertMessage,
+                fetchingData: false,
+                themeConfigs: { layout: {}, configuration: {}, data: {} },
+                devMode: this.props.devMode === "developer" ? "advanced" : this.props.devMode,
+                data: deepMerge.all(
+                    [ getDefaultDataOptions(this.props as HeatMapProps), preview.getData(this.props) ]
+                ) as HeatMapData
+            })
+        );
     }
 
     static getData(props: HeatMapContainerProps): HeatMapData {
@@ -36,7 +43,7 @@ export class preview extends Component<HeatMapContainerProps, {}> {
             y: [ "Morning", "Afternoon", "Evening" ],
             z: [ [ 1, 20, 30, 50, 1 ], [ 20, 1, 60, 80, 30 ], [ 30, 60, 1, -10, 20 ] ],
             zsmooth: props.smoothColor ? "best" : false,
-            colorscale: HeatMapContainer.processColorScale(props.scaleColors),
+            colorscale: processColorScale(props.scaleColors),
             showscale: props.showScale,
             type: "heatmap",
             hoverinfo: "none"

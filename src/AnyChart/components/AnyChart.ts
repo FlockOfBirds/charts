@@ -1,59 +1,66 @@
 
 // tslint:disable no-console
+import deepMerge from "deepmerge";
+import { Config, Layout } from "plotly.js";
 import { Component, ReactChild, createElement } from "react";
-
+import { MapDispatchToProps, connect } from "react-redux";
+import { bindActionCreators } from "redux";
 import { Alert } from "../../components/Alert";
 import { ChartLoading } from "../../components/ChartLoading";
-import { PlotlyChart } from "../../components/PlotlyChart";
-
-import { arrayMerge } from "../../utils/data";
-import deepMerge from "deepmerge";
-import { Style } from "../../utils/namespaces";
-import { Config, Layout } from "plotly.js";
-import { getDimensions, parseStyle } from "../../utils/style";
-import { WrapperProps } from "../../utils/types";
-
+import PlotlyChart from "../../components/PlotlyChart";
 import "../../ui/Charts.scss";
+import { getDimensions, parseStyle } from "../../utils/style";
+import * as PlotlyChartActions from "../../components/actions/PlotlyChartActions";
+import { AnyChartDataHandlerProps } from "./AnyChartDataHandler";
+import { arrayMerge } from "../../utils/data";
+
 // TODO improve typing by replace explicit any types
 
-export interface AnyChartProps extends WrapperProps, Style.Dimensions {
+interface ComponentProps extends AnyChartDataHandlerProps {
     alertMessage?: ReactChild;
-    loading?: boolean;
-    dataStatic: string;
-    layoutStatic: string;
-    attributeData: string;
-    attributeLayout: string;
-    configurationOptions: string;
     onClick?: (data: any) => void;
     onHover?: (data: any, node: HTMLDivElement) => void;
 }
+export type AnyChartProps = ComponentProps & typeof PlotlyChartActions;
 
-export class AnyChart extends Component<AnyChartProps, { alertMessage?: ReactChild }> {
+class AnyChart extends Component<AnyChartProps> {
     render() {
         if (this.props.alertMessage) {
             return createElement(Alert, { className: `widget-charts-any-alert` }, this.props.alertMessage);
         }
-        if (this.props.loading) {
+        if (this.props.fetchingData) {
             return createElement(ChartLoading);
         }
 
         return this.renderChart();
     }
 
-    componentWillReceiveProps(newProps: AnyChartProps) {
-        this.setState({ alertMessage: newProps.alertMessage });
+    componentDidMount() {
+        this.updateData(this.props);
+    }
+
+    componentWillReceiveProps(nextProps: AnyChartProps) {
+        this.updateData(nextProps);
     }
 
     private renderChart() {
         return createElement(PlotlyChart, {
+            widgetID: this.props.friendlyId,
             type: "full",
             className: this.props.class,
             style: { ...getDimensions(this.props), ...parseStyle(this.props.style) },
-            layout: this.getLayoutOptions(this.props),
-            data: this.getData(this.props),
-            config: this.getConfigOptions(this.props),
             onClick: this.onClick
         });
+    }
+
+    private updateData(props: AnyChartProps) {
+        if (!props.alertMessage && !props.fetchingData) {
+            props.updateData(props.friendlyId, {
+                layout: this.getLayoutOptions(props),
+                data: this.getData(props),
+                config: this.getConfigOptions(props)
+            });
+        }
     }
 
     private getData(props: AnyChartProps): any[] {
@@ -99,3 +106,7 @@ export class AnyChart extends Component<AnyChartProps, { alertMessage?: ReactChi
         return deepMerge.all([ { displayModeBar: false, doubleClick: false }, parsedConfig ]);
     }
 }
+
+const mapDispatchToProps: MapDispatchToProps<typeof PlotlyChartActions, ComponentProps> = dispatch =>
+    bindActionCreators(PlotlyChartActions, dispatch);
+export default connect(null, mapDispatchToProps)(AnyChart);

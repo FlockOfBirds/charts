@@ -22,8 +22,10 @@ export namespace Container {
         yAxisLabel: string;
         layoutOptions: string;
         configurationOptions: string;
-        devMode: "basic" | "advanced" | "developer";
+        devMode: DevMode;
     }
+
+    export type DevMode = "basic" | "advanced" | "developer";
 
     export interface BarLayoutProps extends LayoutProps {
         barMode: BarMode;
@@ -66,13 +68,16 @@ export namespace Container {
         data?: Data.SeriesData<SeriesProps>[];
         scatterData?: ScatterData[];
         seriesOptions: string[];
-        loading?: boolean;
+        fetchingData: boolean;
+        fetchingConfigs: boolean;
         themeConfigs: ChartConfigs;
     }
 
+    export type ScatterTypes = "line" | "area" | "bubble" | "polar" | "timeseries";
+
     export interface LineChartContainerProps extends WrapperProps, Style.Dimensions, Style.Appearance, LineLayoutProps {
         series: Data.LineSeriesProps[];
-        type: "line" | "bubble" | "polar" | "area" | "timeseries";
+        type: ScatterTypes;
         restParameters: Container.RestParameter[];
     }
 
@@ -85,7 +90,8 @@ export namespace Container {
         data?: Data.SeriesData<Data.LineSeriesProps>[];
         scatterData?: ScatterData[];
         seriesOptions: string[];
-        loading?: boolean;
+        fetchingData: boolean;
+        fetchingConfigs: boolean;
         themeConfigs: ChartConfigs;
     }
 
@@ -102,7 +108,7 @@ export namespace Container {
         layoutOptions: string;
         configurationOptions: string;
         dataOptions: string;
-        devMode: "basic" | "advanced" | "developer";
+        devMode: DevMode;
     }
 
     export interface HeatMapContainerProps extends Data.DataSourceProps, Style.Dimensions, Style.Appearance, Data.EventProps, WrapperProps {
@@ -123,7 +129,7 @@ export namespace Container {
         layoutOptions: string;
         configurationOptions: string;
         dataOptions: string;
-        devMode: "basic" | "advanced" | "developer";
+        devMode: DevMode;
     }
 
     export interface PolarChartContainerProps extends LineChartContainerProps {

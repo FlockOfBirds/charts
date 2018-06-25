@@ -1,13 +1,16 @@
 import { Component, createElement } from "react";
+import { Provider } from "react-redux";
 
-import { PieChart } from "./components/PieChart";
+import PieChart from "./components/PieChart";
 
 import deepMerge from "deepmerge";
 import { Container } from "../utils/namespaces";
 import { PieData } from "plotly.js";
 import { validateSeriesProps } from "../utils/data";
-import PieChartContainerProps = Container.PieChartContainerProps;
 import { defaultColours } from "../utils/style";
+import { PieChartDataHandlerProps } from "./components/PieChartDataHandler";
+import { store } from "../store";
+import PieChartContainerProps = Container.PieChartContainerProps;
 
 // tslint:disable-next-line class-name
 export class preview extends Component<PieChartContainerProps, {}> {
@@ -19,13 +22,16 @@ export class preview extends Component<PieChartContainerProps, {}> {
             this.props.configurationOptions
         );
 
-        return createElement(PieChart, {
-            ...this.props as PieChartContainerProps,
-            alertMessage,
-            devMode: this.props.devMode === "developer" ? "advanced" : this.props.devMode,
-            defaultData: preview.getData(this.props),
-            themeConfigs: { layout: {}, configuration: {}, data: {} }
-        });
+        return createElement(Provider, { store },
+            createElement(PieChart, {
+                ...this.props as PieChartDataHandlerProps,
+                alertMessage,
+                fetchingData: false,
+                devMode: this.props.devMode === "developer" ? "advanced" : this.props.devMode,
+                pieData: preview.getData(this.props),
+                themeConfigs: { layout: {}, configuration: {}, data: {} }
+            })
+        );
     }
 
     static getData(props: PieChartContainerProps): PieData[] {
