@@ -26,7 +26,7 @@ export interface ComponentProps {
 
 type PlotlyChartProps = ComponentProps & typeof PlotlyChartActions & PlotlyChartInstance;
 
-class PlotlyChart extends Component<PlotlyChartProps> {
+export class PlotlyChart extends Component<PlotlyChartProps> {
     private chartNode?: HTMLDivElement;
     private tooltipNode?: HTMLDivElement;
     private timeoutId?: number;
