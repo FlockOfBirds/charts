@@ -40,7 +40,7 @@ export interface PieTraces {
     colors: string[];
 }
 
-class PieChart extends Component<PieChartProps & PieChartState> {
+export class PieChart extends Component<PieChartProps & PieChartState> {
     private tooltipNode?: HTMLDivElement;
 
     render() {
