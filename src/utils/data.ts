@@ -20,6 +20,14 @@ export const validateSeriesProps = <T extends Partial<SeriesProps>>
         if (dataSeries && dataSeries.length) {
             dataSeries.forEach(series => {
                 const identifier = series.name ? `series "${series.name}"` : "the widget";
+                if (series.seriesType === "dynamic") {
+                    if (!series.seriesEntity) {
+                        errorMessage.push(`'Dynamic series - Series entity' in ${identifier} is missing`);
+                    }
+                    if (!series.seriesNameAttribute) {
+                        errorMessage.push(`'Dynamic series - Series name attribute' in ${identifier} is missing`);
+                    }
+                }
                 if (series.dataSourceType === "microflow") {
                     if (!series.dataSourceMicroflow) {
                         errorMessage.push(`'Data source type' in ${identifier} is set to 'Microflow' but no microflow is specified.`);
@@ -69,14 +77,8 @@ export const validateSeriesProps = <T extends Partial<SeriesProps>>
                 errorMessage.push(`Invalid configuration JSON: ${error}`);
             }
         }
-        if (errorMessage.length) {
-            return createElement("div", {},
-                `Configuration error in widget ${widgetId}:`,
-                errorMessage.map((message, key) => createElement("p", { key }, message))
-            );
-        }
 
-        return "";
+        return errorMessage.length ? renderError(widgetId, errorMessage) : "";
 };
 
 export const validateAdvancedOptions = (rawData: string): string => {
@@ -194,7 +196,7 @@ const validateJSONData = (data: any, attributes: string[]): string => {
     return "";
 };
 
-const getReferences = (attributePaths: string[]): ReferencesSpec => {
+export const getReferences = (attributePaths: string[]): ReferencesSpec => {
     let references: ReferencesSpec = { attributes: [] };
     attributePaths.forEach(attribute => {
         references = addPathReference(references, attribute);
@@ -483,7 +485,7 @@ export const renderError = (id: string, errorMessages: string[]) => {
     if (errorMessages.length) {
         return createElement("div", {},
             `Configuration error in widget ${id}:`,
-            errorMessages.map((message, key) => createElement("p", { key }, message))
+            ...errorMessages.map((message, key) => createElement("p", { key }, message))
         );
     }
 
