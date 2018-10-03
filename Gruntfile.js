@@ -2,20 +2,12 @@
 const webpack = require("webpack");
 const webpackConfig = require("./webpack.config");
 const merge = require("webpack-merge");
-const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
 const widgetNames = Object.keys(webpackConfig[0].entry);
 
 const webpackConfigRelease = webpackConfig.map(config => merge(config, {
     devtool: false,
-    plugins: [
-        new UglifyJsPlugin({
-            parallel: true,
-            cache: true
-        }),
-        new webpack.DefinePlugin({
-            "process.env.NODE_ENV": JSON.stringify("production")
-        })
-    ]
+    mode: "production",
+    optimization: { minimize: true }
 }));
 
 module.exports = function(grunt) {
@@ -28,9 +20,7 @@ module.exports = function(grunt) {
             updateWidgetFiles: {
                 files: [ "./src/**/*", "src/**/*" ],
                 tasks: [ "webpack:develop", "file_append", "compress", "copy" ],
-                options: {
-                    debounceDelay: 250
-                }
+                options: { debounceDelay: 250 }
             }
         },
 
@@ -44,7 +34,7 @@ module.exports = function(grunt) {
                     expand: true,
                     date: new Date(),
                     store: false,
-                    cwd: "./dist/tmp/src",
+                    cwd: "./dist/tmp/widgets",
                     src: [ "**/*" ]
                 } ]
             },
@@ -68,7 +58,7 @@ module.exports = function(grunt) {
                 files: [
                     {
                         dest: "./dist/MxTestProject/deployment/web/widgets",
-                        cwd: "./dist/tmp/src/",
+                        cwd: "./dist/tmp/widgets/",
                         src: [ "**/*" ],
                         expand: true
                     },
@@ -97,7 +87,7 @@ module.exports = function(grunt) {
                 files: widgetNames.map(widgetName => {
                     return {
                         append: `\n\n//# sourceURL=${widgetName}.webmodeler.js\n`,
-                        input: `dist/tmp/src/${widgetName}/${widgetName}.webmodeler.js`
+                        input: `dist/tmp/widgets/${widgetName}/${widgetName}.webmodeler.js`
                     };
                 })
             },
@@ -134,21 +124,21 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks("grunt-check-dependencies");
     grunt.loadNpmTasks("grunt-contrib-clean");
     grunt.loadNpmTasks("grunt-contrib-compress");
-    grunt.loadNpmTasks("grunt-file-append");
     grunt.loadNpmTasks("grunt-contrib-copy");
     grunt.loadNpmTasks("grunt-contrib-watch");
+    grunt.loadNpmTasks("grunt-file-append");
     grunt.loadNpmTasks("grunt-webpack");
 
     grunt.registerTask("default", [ "clean build", "watch" ]);
     grunt.registerTask(
         "clean build",
         "Compiles all the assets and copies the files to the dist directory.",
-        [ "checkDependencies", "clean:build", "webpack:develop", "file_append", "compress", "copy:mpk" ]
+        [ "checkDependencies", "clean:build", "webpack:develop", "file_append", "compress:dist", "copy" ]
     );
     grunt.registerTask(
         "release",
         "Compiles all the assets and copies the files to the dist directory. Minified without source mapping",
-        [ "checkDependencies", "clean:build", "webpack:release", "file_append", "compress", "copy:mpk" ]
+        [ "checkDependencies", "clean:build", "webpack:release", "file_append", "compress:dist", "copy" ]
     );
     grunt.registerTask("build", [ "clean build" ]);
 };

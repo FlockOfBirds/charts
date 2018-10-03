@@ -1,11 +1,8 @@
 // tslint:disable max-line-length
-const webpack = require("webpack");
 const path = require("path");
+const webpack = require("webpack");
 const CopyWebpackPlugin = require("copy-webpack-plugin");
 const ExtractTextPlugin = require("extract-text-webpack-plugin");
-// const BundleAnalyzerPlugin = require("webpack-bundle-analyzer").BundleAnalyzerPlugin;
-// new BundleAnalyzerPlugin()
-
 const widgetName = require("./package").widgetName[0];
 
 const widgetConfig = {
@@ -22,11 +19,18 @@ const widgetConfig = {
     },
     output: {
         jsonpFunction: "webpackJsonpCharts",
-        path: path.resolve(__dirname, "dist/tmp/src"),
+        path: path.resolve(__dirname, "dist/tmp/widgets"),
         filename: "com/mendix/widget/custom/[name]/[name].js",
         chunkFilename: `com/mendix/widget/custom/${widgetName.toLowerCase()}/chunk[chunkhash].js`,
         libraryTarget: "umd",
         publicPath: "/"
+    },
+    devServer: {
+        port: 3000,
+        proxy: [ {
+            context: [ "**", "!/widgets/com/mendix/widget/custom/chats/Charts.js" ],
+            target: "http://localhost:8287/"
+        } ]
     },
     resolve: {
         extensions: [ ".ts", ".js" ],
@@ -34,7 +38,6 @@ const widgetConfig = {
             "tests": path.resolve(__dirname, "./tests")
         }
     },
-    devtool: "eval",
     module: {
         rules: [
             {
@@ -56,24 +59,32 @@ const widgetConfig = {
             }
         ]
     },
+    devtool: "eval",
+    mode: "production",
     externals: [ "react", "react-dom" ],
     plugins: [
         new CopyWebpackPlugin([
-            { from: "src/**/*.js", to: "../", ignore: [ "src/AnyChart/*.js" ] },
-            { from: "src/**/*.xml", to: "../", ignore: [ "src/AnyChart/*.xml" ] }
-        ], {
-            copyUnmodified: true
-        }),
-        new ExtractTextPlugin({ filename: `./com/mendix/widget/custom/[name]/ui/[name].css` }),
+            {
+                from: "src/**/*.xml",
+                to: "[name]/[name].[ext]",
+                toType: "template",
+                ignore: [ "src/AnyChart/*.xml", "src/package.xml" ]
+            },
+            {
+                from: "src/package.xml",
+                to: "[name].[ext]",
+                toType: "template",
+                ignore: [ "src/AnyChart/*.xml" ]
+            }
+        ], { copyUnmodified: true }),
+        new ExtractTextPlugin({ filename: `com/mendix/widget/custom/[name]/ui/[name].css` }),
         new webpack.LoaderOptionsPlugin({ debug: true }),
         new webpack.IgnorePlugin(/^plotly\.js\/dist\/plotly$/)
     ]
 };
 
 const anyChartConfig = {
-    entry: {
-        AnyChart: "./src/AnyChart/components/AnyChartContainer.ts"
-    },
+    entry: { AnyChart: "./src/AnyChart/components/AnyChartContainer.ts" },
     output: {
         jsonpFunction: "webpackJsonpAnyChart",
         path: path.resolve(__dirname, "dist/tmp/AnyChart"),
@@ -116,9 +127,7 @@ const anyChartConfig = {
         new CopyWebpackPlugin([
             { from: "src/AnyChart/AnyChart.xml", to: "../AnyChart/AnyChart/" },
             { from: "src/AnyChart/package.xml", to: "../AnyChart/" }
-        ], {
-            copyUnmodified: true
-        }),
+        ], { copyUnmodified: true }),
         new ExtractTextPlugin({ filename: `./com/mendix/widget/custom/[name]/ui/[name].css` }),
         new webpack.LoaderOptionsPlugin({ debug: true }),
         new webpack.IgnorePlugin(/^plotly\.js\/lib\/core$|^plotly\.js\/lib\/pie$|^plotly\.js\/lib\/bar&|^plotly\.js\/lib\/scatter$^plotly\.js\/lib\/heatmap$/)
@@ -133,19 +142,16 @@ const previewConfig = {
         AreaChart: "./src/AreaChart/AreaChart.webmodeler.ts",
         PieChart: "./src/PieChart/PieChart.webmodeler.ts",
         TimeSeries: "./src/TimeSeries/TimeSeries.webmodeler.ts",
-        HeatMap:  "./src/HeatMap/HeatMap.webmodeler.ts",
+        HeatMap: "./src/HeatMap/HeatMap.webmodeler.ts",
         BubbleChart: "./src/BubbleChart/BubbleChart.webmodeler.ts"
         // PolarChart: "./src/PolarChart/PolarChart.webmodeler.ts"
     },
     output: {
         path: path.resolve(__dirname, "dist/tmp"),
-        filename: "src/[name]/[name].webmodeler.js",
+        filename: "widgets/[name]/[name].webmodeler.js",
         libraryTarget: "commonjs"
     },
-    resolve: {
-        extensions: [ ".ts", ".js" ]
-    },
-    devtool: "eval",
+    resolve: { extensions: [ ".ts", ".js" ] },
     module: {
         rules: [
             { test: /\.ts$/, loader: "ts-loader", options: {
@@ -160,14 +166,14 @@ const previewConfig = {
     },
     externals: [ "react", "react-dom" ],
     plugins: [
-        new webpack.IgnorePlugin(/^plotly\.js\/dist\/plotly$|\/SeriesPlayground$|\/PiePlayground$/)
+        new webpack.IgnorePlugin(
+            /^plotly\.js\/dist\/plotly$|\/SeriesPlayground$|\/PiePlayground$/
+        )
     ]
 };
 
 const anyChartPreviewConfig = {
-    entry: {
-        AnyChart: "./src/AnyChart/AnyChart.webmodeler.ts"
-    },
+    entry: { AnyChart: "./src/AnyChart/AnyChart.webmodeler.ts" },
     output: {
         path: path.resolve(__dirname, "dist/tmp"),
         filename: "AnyChart/[name]/[name].webmodeler.js",
@@ -175,9 +181,7 @@ const anyChartPreviewConfig = {
     },
     resolve: {
         extensions: [ ".ts", ".js" ],
-        alias: {
-            "plotly.js/dist/plotly": "plotly.js/dist/plotly.min.js"
-        }
+        alias: { "plotly.js/dist/plotly": "plotly.js/dist/plotly.min.js" }
     },
     devtool: "eval",
     module: {
@@ -192,6 +196,8 @@ const anyChartPreviewConfig = {
             ] }
         ]
     },
+    mode: "production",
+    devtool: "inline-source-map",
     externals: [ "react", "react-dom" ],
     plugins: [
         new webpack.IgnorePlugin(/^plotly\.js\/lib\/core$|^plotly\.js\/lib\/pie$|^plotly\.js\/lib\/bar$|^plotly\.js\/lib\/scatter$|^plotly\.js\/lib\/heatmap$/)
